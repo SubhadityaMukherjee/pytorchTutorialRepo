@@ -6,6 +6,7 @@
 
 # There are a billion similar repositories, what makes this different?
 
+- Want to understand research papers? Check out my other repo [Link](https://github.com/SubhadityaMukherjee/PaperImplementations/)
 - Comments!!
 - Standardized (mostly) code. Aka I try to be as uniform in my approach as possible
 - Might write a few blog posts
