@@ -14,8 +14,9 @@
 
 - To be very honest, it is for my practise xD
 
-## Some notes
+## FAQ
 
+- Can I use my own dataset? Yes of course. Just modify the dataloader. (I will be adding tutorials for that soon either way)
 - No distributed training. I have only one GPU (sad) so I wont be using it
 - What is the accuracy? Well run it and find out. I cant train everything to its maximum capacity due to lack of time
 - Why so many files? I wonder the same sometimes. But its easier to modify for other data. And keeps my errors easily identifiable

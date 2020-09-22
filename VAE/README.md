@@ -6,11 +6,10 @@
 
 ### Default
 ```bash
-python3 main.py --epochs 10 --lr 0.1 --log-interval 100 --arch "resnet18"
+python3 main.py --epochs 10 --lr 0.1 --log-interval 100 --arch "my"
 ```
 will run default 
 
-- If you use "my" for the architecture, it will take it from Nets.py
 
 ### Advanced run (IMPORTANT)
 
