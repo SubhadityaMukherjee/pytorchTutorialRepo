@@ -57,21 +57,9 @@ parser.add_argument(
 
 parser.add_argument("--save_path", default = "models/model.pt", help = "Choose model saved filepath")
 
-# DC GAN specific args
-parser.add_argument("--nz", default = 100, help = "size of latent vector")
-parser.add_argument("--ngf", default = 64, help = "gen size")
-parser.add_argument("--ndf", default = 64, help= "Discriminator size")
-parser.add_argument("--beta1", default = 0.5, help = "adam beta1 parameter")
-
-parser.add_argument("--nc", default =3, help = "number of image channels")
 args = parser.parse_args()
 
 # Setting params
-
-nz = int(args.nz)
-ngf = int(args.ngf)
-ndf = int(args.ndf)
-nc = int(args.nc)
 
 torch.manual_seed(args.seed)
 device = torch.device("cuda")
@@ -84,40 +72,20 @@ kwargs.update(
     }
 )
 
-# Defining batch transforms
-
-transform = transforms.Compose(
-    [transforms.Resize(64),
-    transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ]
-)
 
 # Loading dataset
 
-train_data = datasets.CIFAR10("~/Desktop/Datasets/", transform =
-                            transform)
-
-
-train_loader = torch.utils.data.DataLoader(train_data, **kwargs)
-
-# Initialize weights
-def weight_init(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        torch.nn.init.normal_(m.weight, 0.0, 0.02)
-    elif classname.find('BatchNorm') != -1:
-        torch.nn.init.normal_(m.weight, 1.0, 0.02)
-        torch.nn.init.zeros_(m.bias)
+data = torch.load("models/traindata.pt")
+input = torch.from_numpy(data[3:,:-1])
+target = torch.from_numpy(data[3:, 1:])
+test_input = torch.from_numpy(data[:3, :-1])
+test_target = torch.from_numpy(data[:3, 1:])
 
 # Loading model
 
 if args.arch == "my":
     from Nets import *
-    netG = Generator(nz, ngf, nc).to(device)
-    netG.apply(weight_init)
-    netD = Discriminator(nc, ndf).to(device)
-    netD.apply(weight_init)
+    model = Net()
     print("Using custom architecture")
 else:
     if args.pretrained:
@@ -126,45 +94,25 @@ else:
     else:
         print(f"Not using pretrained {args.arch}")
         model = models.__dict__[args.arch]()
-
-print("Generator", netG)
-print("Discriminator", netD)
-
+model.double()
+print(model)
 start_epoch = 1
 if args.resume:
     loc = "cuda:0"
-    checkpointD = torch.load(args.save_path+"dis.pt", map_location = loc)
-    
-    checkpointG = torch.load(args.save_path+"gen.pt", map_location = loc)
-    netD.load_state_dict(checkpoint['state_dict'])
-    netD.load_state_dict(checkpoint['optimizer'])
-    netG.load_state_dict(checkpoint['state_dict'])
-    netG.load_state_dict(checkpoint['optimizer'])
-
+    checkpoint = torch.load(args.save_path, map_location = loc)
+    model.load_state_dict(checkpoint['state_dict'])
+    mode.load_state_dict(checkpoint['optimizer'])
     start_epoch = checkpoint['epoch']
 
     print(f"Done loading pretrained, Start epoch: {checkpoint['epoch']}")
 
-# Generate noise
-fixed_noise = torch.randn(args.batch_size, nz, 1, 1, device = device)
-real_label = 1
-fake_label = 0
+optimizer = optim.LBFGS(model.parameters(), lr = 0.8)
 
-# Optimizers
-optimizerD = optim.Adam(netD.parameters(), lr=args.lr, betas=(args.beta1, 0.999))
-optimizerG = optim.Adam(netG.parameters(), lr=args.lr,betas=(args.beta1, 0.999))
-
-# Loop
 for epoch in tqdm(range(start_epoch, args.epochs+1)):
-    train(args, device, train_loader, epoch, netD, netG, real_label,
-          fake_label, fixed_noise, nz, ngf, ndf, nc, optimizerD, optimizerG)
-
+    train(args, model, device, data, input, target, test_input,test_target, optimizer, epoch)
 
 if args.save_model:
-
-    torch.save(netD.state_dict(), args.save_path+"disc.pt")
-    
-    torch.save(netG.state_dict(), args.save_path+"gen.pt")
+    torch.save(model.state_dict(), args.save_path)
 
 
 
