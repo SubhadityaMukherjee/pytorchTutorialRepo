@@ -91,8 +91,14 @@ for epoch in tqdm(range(1, args.epochs+1)):
     test(model, device, test_loader)
     scheduler.step()
 
+checkpoint = {
+        'epoch': epoch + 1,
+        'state_dict': model.state_dict(),
+        'optimizer': optimizer.state_dict()
+}
+
 if args.save_model:
-    torch.save(model.state_dict(), "./models/model.pt")
+    torch.save(checkpoint, "./models/model.pt")
 
 
 
