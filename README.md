@@ -26,3 +26,4 @@
 All the sites I referred to for the codes here (heavily modified so you probably wont find the same things but here for future reference just in case anyone wants it)
 
 - [pytorch/examples](https://github.com/pytorch/examples)
+- [pytorch/tutorials](https://github.com/pytorch/tutorials/)
