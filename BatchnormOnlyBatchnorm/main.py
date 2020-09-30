@@ -10,6 +10,7 @@ from trainer import *
 from tester import *
 import torchvision.models as models
 import os
+
 os.environ["TORCH_HOME"] = "~/Desktop/Datasets/"
 
 # Allowing arguments for direct execution from terminal
@@ -105,6 +106,7 @@ else:
 
 model = model.to(device)
 print(model)
+
 start_epoch = 1
 if args.resume:
     loc = "cuda:0"
@@ -128,8 +130,3 @@ for epoch in tqdm(range(start_epoch, args.epochs+1)):
 
 if args.save_model:
     torch.save(model.state_dict(), args.save_path)
-
-
-
-
-

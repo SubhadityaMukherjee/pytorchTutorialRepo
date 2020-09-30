@@ -1,4 +1,6 @@
-# Any net from pytorch
+# Pruning
+
+- [Blog](https://medium.com/datadriveninvestor/reducing-model-footprint-in-deep-learning-c500b3ff50b)
 
 - This is a demo of model pruning
 - Outputs for the pruned are in the text file outputs.txt
