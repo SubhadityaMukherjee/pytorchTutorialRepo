@@ -10,7 +10,7 @@ from trainer import *
 from tester import *
 import torchvision.models as models
 import os
-os.environ["TORCH_HOME"] = "~/Desktop/Datasets/"
+os.environ["TORCH_HOME"] = "~/Documents/datasets"
 
 # Allowing arguments for direct execution from terminal
 parser = argparse.ArgumentParser()
@@ -81,10 +81,10 @@ transform = transforms.Compose(
 
 # Loading dataset
 
-train_data = datasets.MNIST("~/Desktop/Datasets/",train = True, transform =
-                            transform)
+train_data = datasets.MNIST("~/Documents/datasets/",train = True, transform =
+                            transform, download = True)
 
-test_data = datasets.MNIST("~/Desktop/Datasets/",train = False, transform =
+test_data = datasets.MNIST("~/Documents/datasets/",train = False, transform =
                            transform)
 
 train_loader = torch.utils.data.DataLoader(train_data, **kwargs)
