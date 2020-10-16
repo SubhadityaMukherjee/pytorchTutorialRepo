@@ -1,5 +1,7 @@
 # Pytorch tutorials
 
+> Find Notes for the papers [here](https://github.com/SubhadityaMukherjee/DLPapers)
+
 - Make it easy for anyone to understand huge libraries by taking small examples and breaking it up in that way
 - Tackle all sorts of problems using pure pytorch and not relying on external libraries like Lightning/Fastai etc etc
 - End up with boilerplate code for a variety of tasks
