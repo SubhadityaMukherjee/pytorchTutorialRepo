@@ -148,16 +148,17 @@ if args.resume:
 
 # Generate noise
 # Loss weight for gradient penalty
-lambda_gp = 10
-batches_done = 0
+k = 2
+p = 6
 
 # Optimizers
 optimizerD = optim.Adam(netD.parameters(), lr=args.lr,betas=(args.beta1, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=args.lr,betas=(args.beta1, 0.999))
 
 # Loop
+batches_done = 0
 for epoch in tqdm(range(start_epoch, args.epochs+1)):
-    train(args, device, train_loader, epoch, netD, netG,nz , ndf, nc, optimizerD, optimizerG, batches_done, lambda_gp) 
+    train(args, device, train_loader, epoch, netD, netG,nz , ndf, nc, optimizerD, optimizerG, batches_done, k, p) 
 
 
 if args.save_model:

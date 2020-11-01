@@ -37,7 +37,7 @@ def compute_gradient_penalty(D, real_samples, fake_samples):
 
 
 # @torchsnooper.snoop()
-def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,optimizerG, batches_done, lambda_gp):
+def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,optimizerG, batches_done, k,p):
     device = torch.device("cuda") # Sending to GPU
 
     for i, (imgs, _) in tqdm(enumerate(train_loader), 0):
@@ -51,10 +51,25 @@ def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,
         
         real_validity = netD(real_imgs) # real ims
         fake_validity = netD(fake_imgs) # fake im
-        gradient_penalty = compute_gradient_penalty(netD, real_imgs.data, fake_imgs.data)
 
+        # Get Wdiv
+        real_grad_out = Variable(Tensor(real_imgs.size(0), 1).fill_(1.0), requires_grad= False)
+        real_grad = autograd.grad(
+            real_validity, real_imgs, real_grad_out, create_graph = True , retain_graph = True, only_inputs=True
+        )[0]
+        real_grad_norm = real_grad.view(real_grad.size(0), -1).pow(2).sum(1)**(p/2)
+
+        fake_grad_out = Variable(Tensor(fake_imgs.size(0), 1).fill_(1.0), requires_grad= False)
+        fake_grad = autograd.grad(
+            fake_validity, fake_imgs, real_grad_out, create_graph = True , retain_graph = True, only_inputs=True
+        )[0]
+        fake_grad_norm = fake_grad.view(fake_grad.size(0), -1).pow(2).sum(1)**(p/2)
+
+        div_gp = torch.mean(real_grad_norm + fake_grad_norm) * k/2
+                
+        
         # Adversarial loss
-        d_loss = -torch.mean(real_validity) + torch.mean(fake_validity) + lambda_gp*gradient_penalty
+        d_loss = -torch.mean(real_validity) + torch.mean(fake_validity) + div_gp
         d_loss.backward()
 
         optimizerD.step()
