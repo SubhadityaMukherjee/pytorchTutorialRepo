@@ -11,32 +11,11 @@ from torch.autograd import Variable
 import torchsnooper
 from torchvision.utils import save_image
 
+
+
 Tensor = torch.cuda.FloatTensor 
-
 # @torchsnooper.snoop()
-def compute_gradient_penalty(D, real_samples, fake_samples):
-    # Random weight term for interpolation between real and fake samples
-    alpha = Tensor(np.random.random((real_samples.size(0), 1, 1, 1)))
-    # Get random interpolation between real and fake samples
-    interpolates = (alpha * real_samples + ((1 - alpha) * fake_samples)).requires_grad_(True)
-    d_interpolates = D(interpolates)
-    fake = Variable(Tensor(real_samples.shape[0], 1).fill_(1.0), requires_grad=False)
-    # Get gradient w.r.t. interpolates
-    gradients = autograd.grad(
-        outputs=d_interpolates,
-        inputs=interpolates,
-        grad_outputs=fake,
-        create_graph=True,
-        retain_graph=True,
-        only_inputs=True,
-    )[0]
-    gradients = gradients.view(gradients.size(0), -1)
-    gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean()
-    return gradient_penalty
-
-
-
-# @torchsnooper.snoop()
+# 
 def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,optimizerG, batches_done, k,p):
     device = torch.device("cuda") # Sending to GPU
 
