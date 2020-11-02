@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
+# This is new
 class Generator(torch.nn.Module):
     def __init__(self, img_shape):
         super().__init__()

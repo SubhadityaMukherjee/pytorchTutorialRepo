@@ -14,6 +14,7 @@ from torchvision.utils import save_image
 Tensor = torch.cuda.FloatTensor 
 
 # @torchsnooper.snoop()
+# This is new 
 def compute_gradient_penalty(D, real_samples, fake_samples):
     # Random weight term for interpolation between real and fake samples
     alpha = Tensor(np.random.random((real_samples.size(0), 1, 1, 1)))

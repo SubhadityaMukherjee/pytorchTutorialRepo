@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
+# This is new
 class fire(nn.Module):
     def __init__(self, inplanes, squeeze_planes, expand_planes):
         super(fire, self).__init__()

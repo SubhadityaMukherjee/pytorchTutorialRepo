@@ -30,6 +30,8 @@ def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,
         
         real_validity = netD(real_imgs) # real ims
         fake_validity = netD(fake_imgs) # fake im
+         
+        # This is new
 
         # Get Wdiv
         real_grad_out = Variable(Tensor(real_imgs.size(0), 1).fill_(1.0), requires_grad= False)

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# This is new
 class swish(nn.Module):
     def __init__(self):
         super(swish, self).__init__()

@@ -17,7 +17,7 @@ def conv_1x1_bn(inp, oup):
         nn.ReLU(inplace=True),
     )
 
-
+# This is new
 def channel_shuffle(x, groups):
     batchsize, num_channels, height, width = x.data.size()
 
@@ -33,7 +33,7 @@ def channel_shuffle(x, groups):
 
     return x
 
-
+# This is new
 class InvertedResidual(nn.Module):
     def __init__(self, inp, oup, stride, benchmodel):
         super(InvertedResidual, self).__init__()

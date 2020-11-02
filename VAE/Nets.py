@@ -15,6 +15,7 @@ class Net(nn.Module):
         h1 = F.relu(self.fc1(x))
         return self.fc21(h1), self.fc22(h1)
     
+    # This is new
     def reparameterize(self, mu, logvar):
         std = torch.exp(0.5*logvar)
         eps = torch.randn_like(std)

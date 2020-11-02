@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
 
+# This is new
 def freezeOthers(m):
     for param in m.parameters():
         # check if batchnorm

@@ -5,6 +5,7 @@ from tqdm import tqdm
 from torch.autograd import Variable
 import scipy.stats as stats
 
+# This is new
 class FocalLoss(nn.Module):
     def __init__(self, gamma=0, alpha=None, size_average=True):
         super(FocalLoss, self).__init__()

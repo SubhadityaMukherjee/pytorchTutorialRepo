@@ -7,7 +7,15 @@
 - End up with boilerplate code for a variety of tasks
 - Note that this is work in progress. And many more folders will be added in the coming days
 
-# There are a billion similar repositories, what makes this different?
+## How to use this repo?
+
+- Look for whats *new*. Since most of the code remains the same, there are only a few bits that change. Find them. And youll understand.
+- Search for the "#This is new" comment
+- How do you find whats new? Look at the basicNet repo. This is the starter template. Everything comes from there.
+- What about GANs? Look at DCGAN. It is the basic one
+- Papers? Well you can refer to my notes repo. (above) or you can just read the paper (I recommend this )
+
+## There are a billion similar repositories, what makes this different?
 
 - Want to understand research papers? Check out my other repo [Link](https://github.com/SubhadityaMukherjee/PaperImplementations/)
 - Comments!!
@@ -24,8 +32,10 @@
 - Why so many files? I wonder the same sometimes. But its easier to modify for other data. And keeps my errors easily identifiable
 - Why do you have so many arguments? Most of them arent even used? This is because I wanted to "standardize the codes". So I dont remove much. Just add what I need. That way its easier to see the difference between things. Just remove it if you dont want it there. (If it doesnt break anything)
 
+
 ## References
-All the sites I referred to for the codes here (heavily modified so you probably wont find the same things but here for future reference just in case anyone wants it)
+All the sites I referred to for the codes here (heavily modified so you probably wont find the same things but here for future reference just in case anyone wants it). 
+I have to admit that I relied pretty heavily on these repos. Do have a look at them if you are interested.
 
 - [pytorch/examples](https://github.com/pytorch/examples)
 - [pytorch/tutorials](https://github.com/pytorch/tutorials/)

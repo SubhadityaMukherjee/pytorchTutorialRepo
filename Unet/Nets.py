@@ -7,7 +7,7 @@ from torchsummary import summary
 
 # Conv -> Relu
 
-
+# This is new
 def conv_layer(in_channels, out_channels, kernel, padding):
     return nn.Sequential(
         nn.Conv2d(in_channels, out_channels, kernel, padding=padding),

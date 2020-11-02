@@ -15,7 +15,8 @@ Tensor = torch.cuda.FloatTensor
 
 # Boundary seeking loss [Ref](https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/bgan/bgan.py
 
-def boundary_seeking_loss(y_pred, y_true):
+# This is new
+def boundary_seeking_loss(y_pred, y_true): 
     return 0.5 * torch.mean((torch.log(y_pred) - torch.log(1 - y_pred)) ** 2) + 1.0
 
 def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,optimizerG, batches_done):
