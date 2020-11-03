@@ -60,3 +60,10 @@ class Discriminator(nn.Module):
     def forward(self,input):
         return self.main(input).view(-1,1).squeeze(1)
 
+import hiddenlayer as hl
+from torch.autograd import Variable
+x = Variable(torch.rand(1, 1, 28, 28))
+n = Net()
+n.eval()
+h = hl.build_graph(n, x)
+h.save('gp.png')

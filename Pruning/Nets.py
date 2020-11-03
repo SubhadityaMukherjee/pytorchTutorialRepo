@@ -22,3 +22,10 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+import hiddenlayer as hl
+from torch.autograd import Variable
+x = Variable(torch.rand(1, 1, 28, 28))
+n = Net()
+n.eval()
+h = hl.build_graph(n, x)
+h.save('gp.png')

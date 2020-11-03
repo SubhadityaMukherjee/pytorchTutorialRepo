@@ -56,3 +56,10 @@ class Discriminator(torch.nn.Module):
         img = img.view(img.shape[0], -1)
         validity = self.adv_layer(img)
         return validity
+import hiddenlayer as hl
+from torch.autograd import Variable
+x = Variable(torch.rand(1, 1, 28, 28))
+n = Net()
+n.eval()
+h = hl.build_graph(n, x)
+h.save(''gp.png'')

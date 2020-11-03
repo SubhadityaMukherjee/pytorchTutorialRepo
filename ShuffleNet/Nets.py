@@ -163,3 +163,10 @@ class Net(nn.Module):
         x = x.view(-1, self.stage_out_channels[-1])
         x = self.classifier(x)
         return x
+import hiddenlayer as hl
+from torch.autograd import Variable
+x = Variable(torch.rand(1, 1, 28, 28))
+n = Net()
+n.eval()
+h = hl.build_graph(n, x)
+h.save('gp.png')
