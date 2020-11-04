@@ -29,11 +29,3 @@ class Net(nn.Module):
         init.orthogonal_(self.conv2.weight,init.calculate_gain('relu'))
         init.orthogonal_(self.conv3.weight,init.calculate_gain('relu'))
         init.orthogonal_(self.conv4.weight)
-
-import hiddenlayer as hl
-from torch.autograd import Variable
-x = Variable(torch.rand(1, 1, 28, 28))
-n = Net()
-n.eval()
-h = hl.build_graph(n, x)
-h.save('gp.png')
