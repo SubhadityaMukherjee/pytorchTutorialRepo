@@ -2,8 +2,8 @@
 
 > Find Notes for the papers [here](https://github.com/SubhadityaMukherjee/DLPapers)
 
+- Many codes are using Pytorch Lightning. More will follow. Eventually I might shift any important ones to it. Why? Well. It did what I wanted to with this repository in terms of standardization. Why be redundant. 
 - Make it easy for anyone to understand huge libraries by taking small examples and breaking it up in that way
-- Tackle all sorts of problems using pure pytorch and not relying on external libraries like Lightning/Fastai etc etc
 - End up with boilerplate code for a variety of tasks
 - Note that this is work in progress. And many more folders will be added in the coming days
 
