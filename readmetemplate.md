@@ -21,11 +21,11 @@
 - Comments!!
 - Standardized (mostly) code. Aka I try to be as uniform in my approach as possible
 - Might write a few blog posts
-
 - To be very honest, it is for my practise xD
 
 ## FAQ
 
+- What is readmegen.sh?? Well its a bash script which takes a template and adds a folder wise listing so its easy to see whats been done. (I am lazy come on.)
 - Can I use my own dataset? Yes of course. Just modify the dataloader. (I will be adding tutorials for that soon either way)
 - No distributed training. I have only one GPU (sad) so I wont be using it
 - What is the accuracy? Well run it and find out. I cant train everything to its maximum capacity due to lack of time
@@ -43,40 +43,3 @@ I have to admit that I relied pretty heavily on these repos. Do have a look at t
 - [GANS](https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan_div/wgan_div.py)
 
 ## What can you find in this repo?
-
-
-GAN
-GAN/BGAN
-GAN/CGAN
-GAN/CoGAN(WIP)
-GAN/DCGAN
-GAN/WGANdiv
-GAN/WGANgp
-GAN/draGAN
-GAN/lsGAN
-GAN/relativisticGAN
-TrainingParams
-TrainingParams/BatchnormOnlyBatchnorm
-TrainingParams/FocalLoss
-TrainingParams/Mish
-TrainingParams/Pruning
-TrainingParams/SeLU
-TrainingParams/Swish
-applications
-applications/AdversarialFGSM
-applications/AudioClassification
-applications/FederatedLearningPySyft
-applications/LSTMcosineWave
-applications/SuperRes
-applications/simpleRecommendationSystem
-architectures
-architectures/AlexNet
-architectures/MobileNet
-architectures/STN
-architectures/ShuffleNet
-architectures/SqueezeNet
-architectures/Unet
-architectures/VAE
-architectures/VGG16
-architectures/basicNet
-architectures/standardModels

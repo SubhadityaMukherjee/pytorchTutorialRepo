@@ -1,4 +1,6 @@
 *.pth
+lightning_logs/*
+lightning_logs
 __pycache__
 __pycache__/*
 *.pyc
@@ -6,3 +8,5 @@ __pycache__/*
 *.mp4
 *.png
 *.jpg
+*.pkl
+
