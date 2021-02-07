@@ -45,38 +45,38 @@ I have to admit that I relied pretty heavily on these repos. Do have a look at t
 ## What can you find in this repo?
 
 
-GAN
-GAN/BGAN
-GAN/CGAN
-GAN/CoGAN(WIP)
-GAN/DCGAN
-GAN/WGANdiv
-GAN/WGANgp
-GAN/draGAN
-GAN/lsGAN
-GAN/relativisticGAN
-TrainingParams
-TrainingParams/BatchnormOnlyBatchnorm
-TrainingParams/FocalLoss
-TrainingParams/Mish
-TrainingParams/Pruning
-TrainingParams/SeLU
-TrainingParams/Swish
-applications
-applications/AdversarialFGSM
-applications/AudioClassification
-applications/FederatedLearningPySyft
-applications/LSTMcosineWave
-applications/SuperRes
-applications/simpleRecommendationSystem
-architectures
-architectures/AlexNet
-architectures/MobileNet
-architectures/STN
-architectures/ShuffleNet
-architectures/SqueezeNet
-architectures/Unet
-architectures/VAE
-architectures/VGG16
-architectures/basicNet
-architectures/standardModels
+- GAN
+- GAN/BGAN
+- GAN/CGAN
+- GAN/CoGAN(WIP)
+- GAN/DCGAN
+- GAN/WGANdiv
+- GAN/WGANgp
+- GAN/draGAN
+- GAN/lsGAN
+- GAN/relativisticGAN
+- TrainingParams
+- TrainingParams/BatchnormOnlyBatchnorm
+- TrainingParams/FocalLoss
+- TrainingParams/Mish
+- TrainingParams/Pruning
+- TrainingParams/SeLU
+- TrainingParams/Swish
+- applications
+- applications/AdversarialFGSM
+- applications/AudioClassification
+- applications/FederatedLearningPySyft
+- applications/LSTMcosineWave
+- applications/SuperRes
+- applications/simpleRecommendationSystem
+- architectures
+- architectures/AlexNet
+- architectures/MobileNet
+- architectures/STN
+- architectures/ShuffleNet
+- architectures/SqueezeNet
+- architectures/Unet
+- architectures/VAE
+- architectures/VGG16
+- architectures/basicNet
+- architectures/standardModels
