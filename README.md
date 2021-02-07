@@ -21,11 +21,11 @@
 - Comments!!
 - Standardized (mostly) code. Aka I try to be as uniform in my approach as possible
 - Might write a few blog posts
-
 - To be very honest, it is for my practise xD
 
 ## FAQ
 
+- What is readmegen.sh?? Well its a bash script which takes a template and adds a folder wise listing so its easy to see whats been done. (I am lazy come on.)
 - Can I use my own dataset? Yes of course. Just modify the dataloader. (I will be adding tutorials for that soon either way)
 - No distributed training. I have only one GPU (sad) so I wont be using it
 - What is the accuracy? Well run it and find out. I cant train everything to its maximum capacity due to lack of time
