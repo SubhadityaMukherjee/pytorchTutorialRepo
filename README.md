@@ -68,6 +68,7 @@ I have to admit that I relied pretty heavily on these repos. Do have a look at t
 - applications/FederatedLearningPySyft
 - applications/LSTMcosineWave
 - applications/SuperRes
+- applications/basicTextClassification
 - applications/simpleRecommendationSystem
 - architectures
 - architectures/AlexNet

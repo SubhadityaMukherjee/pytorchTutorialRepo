@@ -21,10 +21,12 @@ from torch.utils.data import DataLoader, random_split
 from torch.nn import functional as F
 from torchvision.datasets import MNIST, ImageFolder
 from torchvision import datasets, transforms
+import torchsnooper as sn
 from pytorch_lightning import Trainer
 import torchvision.models as models
 from collections import Counter
 from pytorch_lightning import loggers as pl_loggers
+import numpy as np
 import pickle
 import os
 os.environ["TORCH_HOME"] = "~/Desktop/Datasets/"
@@ -33,81 +35,57 @@ os.environ["TORCH_HOME"] = "~/Desktop/Datasets/"
 # # Create model
 
 class LitModel(pl.LightningModule):
-    def __init__(self, input_shape, num_classes, learning_rate=2e-4):
+    def __init__(self, input_shape, learning_rate=2e-4):
         super().__init__()
 
         # log hyperparameters
         self.save_hyperparameters()
         self.learning_rate = learning_rate
         self.dim = input_shape
-        self.num_classes = num_classes
-        self.accuracy = pl.metrics.Accuracy()
-#         self.average_p = pl.metrics.functional.average_precision()
-#         self.val_accuracy = pl.metrics.Accuracy()
-#         self.test_accuracy = pl.metrics.Accuracy()
 
-        # transfer learning if pretrained=True
-        self.feature_extractor = models.resnet18(pretrained=True)
-        # layers are frozen by using eval()
-        self.feature_extractor.eval()
-
-        n_sizes = self._get_conv_output(input_shape)
-
-        self.classifier = nn.Linear(n_sizes, num_classes)
-
-    # returns the size of the output tensor going into the Linear layer from the conv block.
-    def _get_conv_output(self, shape):
-        batch_size = 1
-        input = torch.autograd.Variable(torch.rand(batch_size, *shape))
-
-        output_feat = self._forward_features(input)
-        n_size = output_feat.data.view(batch_size, -1).size(1)
-        return n_size
-
-    # returns the feature tensor from the conv block
-    def _forward_features(self, x):
-        x = self.feature_extractor(x)
-        return x
-
-    # will be used during inference
+        self.encoder = nn.Sequential(
+            nn.Linear(np.prod(self.dim), 64),
+            nn.ReLU(),
+            nn.Linear(64, 3)
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(3, 64),
+            nn.ReLU(),
+            nn.Linear(64, np.prod(self.dim))
+        )
     def forward(self, x):
-        x = self._forward_features(x)
+        print(self.dim , np.prod(self.dim))
+        # in lightning, forward defines the prediction/inference actions
+        embedding = self.encoder(x)
+        return embedding
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
         x = x.view(x.size(0), -1)
-        x = F.log_softmax(self.classifier(x), dim=1)
-
-        return x
-
-    def cross_entropy_loss(self, logits, labels):
-        return F.nll_loss(logits, labels)
-
-    def training_step(self, train_batch, batch_idx):
-        x, y = train_batch
-        logits = self.forward(x)
-        loss = self.cross_entropy_loss(logits, y)
-        preds = self(x)
-        self.log('train_acc_step', self.accuracy(preds, y))
-        self.log('train_loss', loss)
-#         self.log('avg_p_train', pl.metrics.functional.average_precision(preds, y,num_classes=self.num_classes))
+        z = self.encoder(x)
+        x_hat = self.decoder(z)
+        loss = F.mse_loss(x_hat, x)
+        self.log('train_loss_step', loss)
+        return loss
+        
+    def val_step(self, batch, batch_idx):
+        x, y = batch
+        x = x.view(x.size(0), -1)
+        z = self.encoder(x)
+        x_hat = self.decoder(z)
+        loss = F.mse_loss(x_hat, x)
+        self.log('val_loss_step', loss)
         return loss
     
-
-    def val_step(self, val_batch, batch_idx):
-        x, y = val_batch
-        logits = self.forward(x)
-        loss = self.cross_entropy_loss(logits, y)
-        preds = self(x)
-        self.log('val_acc_step', self.accuracy(preds, y))
-#         self.log('avg_p_val', pl.metrics.functional.average_precision(preds, y,num_classes=self.num_classes))
-        self.log('val_loss', loss)
-    
-    def test_step(self, test_batch, batch_idx):
-        x, y = test_batch
-        logits = self.forward(x)
-        loss = self.cross_entropy_loss(logits, y)
-        preds = self(x)
-        self.log('test_acc_step', self.accuracy(preds, y))
-#         self.log('avg_p_val', pl.metrics.functional.average_precision(preds, y,num_classes=self.num_classes))
-        self.log('test_loss', loss)
+    def test_step(self, batch, batch_idx):
+        x, y = batch
+        x = x.view(x.size(0), -1)
+        z = self.encoder(x)
+        x_hat = self.decoder(z)
+        loss = F.mse_loss(x_hat, x)
+        self.log('test_loss_step', loss)
+        return loss
+ 
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
@@ -117,7 +95,7 @@ class LitModel(pl.LightningModule):
 # # Load data
 
 class ImDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, num_classes, data_dir: str = '/home/eragon/Desktop/Datasets/LandscapeSort/'):
+    def __init__(self, batch_size, data_dir: str = '/home/eragon/Desktop/Datasets/LandscapeSort/'):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -138,8 +116,6 @@ class ImDataModule(pl.LightningDataModule):
               transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
         ])
         
-        self.num_classes = num_classes
-
     def setup(self, stage=None):
         # build dataset
         im_dataset = ImageFolder(self.data_dir)
@@ -162,7 +138,7 @@ class ImDataModule(pl.LightningDataModule):
         return DataLoader(self.test, batch_size=self.batch_size, num_workers=12)
 
 
-dm = ImDataModule(batch_size=64,num_classes=5)
+dm = ImDataModule(batch_size=64)
 class_ids = dm.setup()
 
 # Samples required by the custom ImagePredictionLogger callback to log image predictions.
@@ -172,9 +148,7 @@ val_imgs.shape, val_labels.shape
 
 # # Logs
 
-tensorboard --logdir ./lightning_logs
-
-model = LitModel(( 3, 224, 224), 10)
+model = LitModel(( 3, 224, 224))
 
 tb_logger = pl_loggers.TensorBoardLogger('./lightning_logs/')
 
@@ -189,33 +163,31 @@ trainer.test()
 
 trainer.save_checkpoint('model1.ckpt')
 
-with open("class_ids.pkl","wb+") as f:
-    pickle.dump(class_ids, f)
-
 # # Inference
 
 from PIL import Image
 
-with open("class_ids.pkl","rb+") as f:
-    class_ids = pickle.load(f)
-
 transform = transforms.Compose([
-              transforms.Resize(size=256),
-              transforms.CenterCrop(size=224),
+              transforms.Resize(size=224),
               transforms.ToTensor(),
               transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
         ])
 
-class_ids = {v: k for k, v in class_ids.items()}
-class_ids
-
 m1 = LitModel.load_from_checkpoint('model1.ckpt')
 
-t_path = "/home/eragon/Documents/ArtReferences/Landscapes/Desert/00000016_(6).jpg"
+t_path = "/home/eragon/Documents/"
 
-im_sh = Image.open(t_path).convert('RGB');im_sh.resize((128,128))
+im_sh = Image.open("/home/eragon/Desktop/Datasets/BSDS300/images/train/2092.jpg").convert('RGB');im_sh.resize((128,128))
 
-test = transform(im_sh).unsqueeze(0)
+test = transform(im_sh)
+
+test.size()
+
+m1(test)
+
+224*224*3
+
+
 
 pred = class_ids[int(torch.argmax(m1(test), 1))];pred
 

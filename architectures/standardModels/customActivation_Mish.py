@@ -12,7 +12,10 @@
 #     name: python3
 # ---
 
-# The dataset is a custom one -> has a few catgories of landscapes. (Replace with any data in folderwise. One for each class.)
+# # Notes
+# - The dataset is a custom one -> has a few catgories of landscapes. (Replace with any data in folderwise. One for each class.)
+# - Misra, D. (2019). Mish: A self regularized non-monotonic neural activation function. arXiv preprint arXiv:1908.08681. [paper](https://arxiv.org/pdf/1908.08681)
+# - Changing ReLU -> Mish on VGG16 network
 
 import torch
 from torch import nn
@@ -32,6 +35,14 @@ os.environ["TORCH_HOME"] = "~/Desktop/Datasets/"
 
 # # Create model
 
+class mish(nn.Module):
+    def __init__(self):
+        super(mish, self).__init__()
+    def forward(self, x):
+        return x*torch.sigmoid(x)
+
+
+
 class LitModel(pl.LightningModule):
     def __init__(self, input_shape, num_classes, learning_rate=2e-4):
         super().__init__()
@@ -42,44 +53,67 @@ class LitModel(pl.LightningModule):
         self.dim = input_shape
         self.num_classes = num_classes
         self.accuracy = pl.metrics.Accuracy()
-#         self.average_p = pl.metrics.functional.average_precision()
-#         self.val_accuracy = pl.metrics.Accuracy()
-#         self.test_accuracy = pl.metrics.Accuracy()
+        
+        self.conv1 = self.conv_block(2, 3, 64)
+        self.conv2 = self.conv_block(2, 64, 128)
+        self.conv3 = self.conv_block(3, 128, 256)
+        self.conv4 = self.conv_block(3, 256, 512)
+        self.conv5 = self.conv_block(3, 512, 512)
+        self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
+        self.classif = nn.Sequential(
+            nn.Linear(512 * 7 * 7, 4096),
+            mish(),
+            nn.Dropout(0.25),
+            nn.Linear(4096, 4096),
+            mish(),
+            nn.Dropout(0.25),
+            nn.Linear(4096, self.num_classes),
+        )
 
-        # transfer learning if pretrained=True
-        self.feature_extractor = models.resnet18(pretrained=True)
-        # layers are frozen by using eval()
-        self.feature_extractor.eval()
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
 
-        n_sizes = self._get_conv_output(input_shape)
-
-        self.classifier = nn.Linear(n_sizes, num_classes)
-
-    # returns the size of the output tensor going into the Linear layer from the conv block.
-    def _get_conv_output(self, shape):
-        batch_size = 1
-        input = torch.autograd.Variable(torch.rand(batch_size, *shape))
-
-        output_feat = self._forward_features(input)
-        n_size = output_feat.data.view(batch_size, -1).size(1)
-        return n_size
-
-    # returns the feature tensor from the conv block
-    def _forward_features(self, x):
-        x = self.feature_extractor(x)
-        return x
-
-    # will be used during inference
+    def conv_block(self, n, inb, out):
+        return nn.Sequential(
+            nn.Sequential(
+                nn.Conv2d(inb, out, kernel_size=3, padding=1, stride=1),
+                mish(),
+            ),
+            *[
+                nn.Sequential(
+                    nn.Conv2d(out, out, kernel_size=3, padding=1, stride=1),
+                    mish(),
+                )
+                for _ in range(n - 1)
+            ],
+            nn.MaxPool2d(2, 2)
+        )
     def forward(self, x):
-        x = self._forward_features(x)
-        x = x.view(x.size(0), -1)
-        x = F.log_softmax(self.classifier(x), dim=1)
+        self._initialize_weights()
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classif(x)
 
         return x
 
     def cross_entropy_loss(self, logits, labels):
         return F.nll_loss(logits, labels)
-
+    
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
         logits = self.forward(x)
@@ -162,7 +196,7 @@ class ImDataModule(pl.LightningDataModule):
         return DataLoader(self.test, batch_size=self.batch_size, num_workers=12)
 
 
-dm = ImDataModule(batch_size=64,num_classes=5)
+dm = ImDataModule(batch_size=16,num_classes=4)
 class_ids = dm.setup()
 
 # Samples required by the custom ImagePredictionLogger callback to log image predictions.
@@ -172,14 +206,12 @@ val_imgs.shape, val_labels.shape
 
 # # Logs
 
-tensorboard --logdir ./lightning_logs
-
-model = LitModel(( 3, 224, 224), 10)
+model = LitModel(( 3, 224, 224), 4)
 
 tb_logger = pl_loggers.TensorBoardLogger('./lightning_logs/')
 
 trainer = pl.Trainer(auto_select_gpus=True, gpus=1,
-                     precision=16, profiler=False,max_epochs=100,
+                     precision=16, profiler=False,max_epochs=30,
                     callbacks = [pl.callbacks.ProgressBar()],
                      automatic_optimization=True,logger = tb_logger,enable_pl_optimizer=True)
 
@@ -211,7 +243,7 @@ class_ids
 
 m1 = LitModel.load_from_checkpoint('model1.ckpt')
 
-t_path = "/home/eragon/Documents/ArtReferences/Landscapes/Desert/00000016_(6).jpg"
+t_path = "/home/eragon/Desktop/Datasets/LandscapeSort/Mountain/00000025_(7).jpg"
 
 im_sh = Image.open(t_path).convert('RGB');im_sh.resize((128,128))
 

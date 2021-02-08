@@ -32,6 +32,56 @@ os.environ["TORCH_HOME"] = "~/Desktop/Datasets/"
 
 # # Create model
 
+class Generator(nn.Module):
+    def __init__(self, latent_dim, img_shape):
+        super().__init__()
+        self.img_shape = img_shape
+
+        def block(in_feat, out_feat, normalize=True):
+            layers = [nn.Linear(in_feat, out_feat)]
+            if normalize:
+                layers.append(nn.BatchNorm1d(out_feat, 0.8))
+            layers.append(nn.LeakyReLU(0.2, inplace=True))
+            return layers
+
+        self.model = nn.Sequential(
+            *block(latent_dim, 128, normalize=False),
+            *block(128, 256),
+            *block(256, 512),
+            *block(512, 1024),
+            nn.Linear(1024, int(np.prod(img_shape))),
+            nn.Tanh()
+        )
+
+    def forward(self, z):
+        img = self.model(z)
+        img = img.view(img.size(0), *self.img_shape)
+        return img
+
+
+# +
+class Discriminator(nn.Module):
+    def __init__(self, img_shape):
+        super().__init__()
+
+        self.model = nn.Sequential(
+            nn.Linear(int(np.prod(img_shape)), 512),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(512, 256),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(256, 1),
+            nn.Sigmoid(),
+        )
+
+    def forward(self, img):
+        img_flat = img.view(img.size(0), -1)
+        validity = self.model(img_flat)
+
+        return validity
+
+
+# -
+
 class LitModel(pl.LightningModule):
     def __init__(self, input_shape, num_classes, learning_rate=2e-4):
         super().__init__()
@@ -41,44 +91,8 @@ class LitModel(pl.LightningModule):
         self.learning_rate = learning_rate
         self.dim = input_shape
         self.num_classes = num_classes
-        self.accuracy = pl.metrics.Accuracy()
-#         self.average_p = pl.metrics.functional.average_precision()
-#         self.val_accuracy = pl.metrics.Accuracy()
-#         self.test_accuracy = pl.metrics.Accuracy()
-
-        # transfer learning if pretrained=True
-        self.feature_extractor = models.resnet18(pretrained=True)
-        # layers are frozen by using eval()
-        self.feature_extractor.eval()
-
-        n_sizes = self._get_conv_output(input_shape)
-
-        self.classifier = nn.Linear(n_sizes, num_classes)
-
-    # returns the size of the output tensor going into the Linear layer from the conv block.
-    def _get_conv_output(self, shape):
-        batch_size = 1
-        input = torch.autograd.Variable(torch.rand(batch_size, *shape))
-
-        output_feat = self._forward_features(input)
-        n_size = output_feat.data.view(batch_size, -1).size(1)
-        return n_size
-
-    # returns the feature tensor from the conv block
-    def _forward_features(self, x):
-        x = self.feature_extractor(x)
-        return x
-
-    # will be used during inference
-    def forward(self, x):
-        x = self._forward_features(x)
-        x = x.view(x.size(0), -1)
-        x = F.log_softmax(self.classifier(x), dim=1)
-
-        return x
-
-    def cross_entropy_loss(self, logits, labels):
-        return F.nll_loss(logits, labels)
+        
+        
 
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
