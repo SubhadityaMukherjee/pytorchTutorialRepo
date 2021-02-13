@@ -5,26 +5,24 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.10.0
+#       jupytext_version: 1.10.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
 
-# The dataset is a custom one -> has a few catgories of landscapes. (Replace with any data in folderwise. One for each class.)
-
 import torch
 from torch import nn
-import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split
 from torch.nn import functional as F
+import pytorch_lightning as pl
+from pytorch_lightning import Trainer
+from pytorch_lightning import loggers as pl_loggers
 from sklearn import model_selection, preprocessing
 import numpy as np
-from pytorch_lightning import Trainer
 import torchvision.models as models
 from collections import Counter
-from pytorch_lightning import loggers as pl_loggers
 import pickle
 import os
 import transformers
@@ -168,6 +166,10 @@ class CSVDataModule(pl.LightningDataModule):
 def on_batch_end(self):
     if self.sched is not None:
         self.sched.step()
+
+
+def plot_ima
+
 
 
 # # Model

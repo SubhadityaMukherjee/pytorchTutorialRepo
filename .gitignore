@@ -1,4 +1,6 @@
 *.pth
+logs/*
+logs
 lightning_logs/*
 lightning_logs
 __pycache__
@@ -9,4 +11,6 @@ __pycache__/*
 *.png
 *.jpg
 *.pkl
-
+*.ckpt
+*.yaml
+*.csv

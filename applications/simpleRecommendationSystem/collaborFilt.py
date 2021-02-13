@@ -5,14 +5,12 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.10.0
+#       jupytext_version: 1.10.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
-
-# The dataset is a custom one -> has a few catgories of landscapes. (Replace with any data in folderwise. One for each class.)
 
 import torch
 from torch import nn

@@ -69,6 +69,7 @@ I have to admit that I relied pretty heavily on these repos. Do have a look at t
 - applications/LSTMcosineWave
 - applications/SuperRes
 - applications/basicTextClassification
+- applications/leafDiseaseClassification
 - applications/simpleRecommendationSystem
 - architectures
 - architectures/AlexNet
