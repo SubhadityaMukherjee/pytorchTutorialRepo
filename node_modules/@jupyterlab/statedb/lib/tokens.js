@@ -1,0 +1,12 @@
+"use strict";
+// Copyright (c) Jupyter Development Team.
+// Distributed under the terms of the Modified BSD License.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.IStateDB = void 0;
+const coreutils_1 = require("@lumino/coreutils");
+/* tslint:disable */
+/**
+ * The default state database token.
+ */
+exports.IStateDB = new coreutils_1.Token('@jupyterlab/coreutils:IStateDB');
+//# sourceMappingURL=tokens.js.map

@@ -225,7 +225,7 @@ class ImDataModule(pl.LightningDataModule):
         self.valid_dataset=ImageClassDs(
                             val,
                             self.data_dir,
-                            train=True,
+                            train=False,
                             transforms=self.valid_transform)
 
     def train_dataloader(self):
