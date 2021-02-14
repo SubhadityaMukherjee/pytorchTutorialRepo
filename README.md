@@ -73,6 +73,7 @@ I have to admit that I relied pretty heavily on these repos. Do have a look at t
 - applications/jigsawToxicCommentClassification
 - applications/leafDiseaseClassification
 - applications/simpleRecommendationSystem
+- applications/videoPrediction
 - architectures
 - architectures/AlexNet
 - architectures/MobileNet

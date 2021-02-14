@@ -1,0 +1,2 @@
+- https://github.com/holmdk/Video-Prediction-using-PyTorch
+-  https://github.com/edenton/svg/blob/master/data/moving_mnist.py (Moving MNIST)
