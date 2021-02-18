@@ -1,0 +1,2 @@
+- Dataset : CelebA
+- https://github.com/harveyslash/Facial-Similarity-with-Siamese-Networks-in-Pytorch

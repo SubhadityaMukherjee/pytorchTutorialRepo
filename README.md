@@ -70,6 +70,7 @@ I have to admit that I relied pretty heavily on these repos. Do have a look at t
 - applications/LSTMcosineWave
 - applications/SuperRes
 - applications/basicTextClassification
+- applications/faceRecog
 - applications/jigsawToxicCommentClassification
 - applications/leafDiseaseClassification
 - applications/simpleRecommendationSystem
