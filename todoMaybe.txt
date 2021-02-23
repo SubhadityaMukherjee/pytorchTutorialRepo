@@ -1,3 +1,9 @@
 - https://www.kaggle.com/bootiu/cyclegan-pytorch-lightning
 - https://github.com/nhatsmrt/arxiv-prediction/blob/master/train_lightning.py
 - https://github.com/nocotan/pytorch-lightning-gans/blob/master/models/dcgan.py
+- https://github.com/mtszkw/lish-moa
+- https://github.com/topics/pytorch-lightning?o=desc&s=updated
+
+
+shared backbone networks??????? Hydranet??
+RNN on videos
