@@ -14,3 +14,5 @@ __pycache__/*
 *.ckpt
 *.yaml
 *.csv
+runs/
+runs/*
