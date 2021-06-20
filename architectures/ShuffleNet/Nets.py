@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 def conv_bn(inp, oup, stride):
     return nn.Sequential(
         nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
@@ -16,6 +17,7 @@ def conv_1x1_bn(inp, oup):
         nn.BatchNorm2d(oup),
         nn.ReLU(inplace=True),
     )
+
 
 # This is new
 def channel_shuffle(x, groups):
@@ -32,6 +34,7 @@ def channel_shuffle(x, groups):
     x = x.view(batchsize, -1, height, width)
 
     return x
+
 
 # This is new
 class InvertedResidual(nn.Module):
@@ -100,7 +103,7 @@ class InvertedResidual(nn.Module):
 
 
 class Net(nn.Module):
-    def __init__(self,n_class=10, input_size=224, width_mult=1.0):
+    def __init__(self, n_class=10, input_size=224, width_mult=1.0):
         super(Net, self).__init__()
 
         self.stage_repeats = [4, 8, 4]
@@ -163,10 +166,13 @@ class Net(nn.Module):
         x = x.view(-1, self.stage_out_channels[-1])
         x = self.classifier(x)
         return x
+
+
 import hiddenlayer as hl
 from torch.autograd import Variable
+
 x = Variable(torch.rand(1, 1, 28, 28))
 n = Net()
 n.eval()
 h = hl.build_graph(n, x)
-h.save('gp.png')
+h.save("gp.png")

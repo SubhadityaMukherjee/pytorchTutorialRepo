@@ -4,10 +4,19 @@ from torchvision import datasets, transforms
 
 # from: https://github.com/edenton/svg/blob/master/data/moving_mnist.py
 
+
 class MovingMNIST(object):
     """Data Handler that creates Bouncing MNIST dataset on the fly."""
 
-    def __init__(self, train, data_root, seq_len=20, num_digits=2, image_size=64, deterministic=True):
+    def __init__(
+        self,
+        train,
+        data_root,
+        seq_len=20,
+        num_digits=2,
+        image_size=64,
+        deterministic=True,
+    ):
         path = data_root
         self.seq_len = seq_len
         self.num_digits = num_digits
@@ -23,8 +32,9 @@ class MovingMNIST(object):
             train=train,
             download=True,
             transform=transforms.Compose(
-                [transforms.Scale(self.digit_size),
-                 transforms.ToTensor()]))
+                [transforms.Scale(self.digit_size), transforms.ToTensor()]
+            ),
+        )
 
         self.N = len(self.data)
 
@@ -40,11 +50,9 @@ class MovingMNIST(object):
         self.set_seed(index)
         image_size = self.image_size
         digit_size = self.digit_size
-        x = np.zeros((self.seq_len,
-                      image_size,
-                      image_size,
-                      self.channels),
-                     dtype=np.float32)
+        x = np.zeros(
+            (self.seq_len, image_size, image_size, self.channels), dtype=np.float32
+        )
         for n in range(self.num_digits):
             idx = np.random.randint(self.N)
             digit, _ = self.data[idx]
@@ -84,11 +92,9 @@ class MovingMNIST(object):
                         dx = np.random.randint(-4, 0)
                         dy = np.random.randint(-4, 5)
 
-                x[t, sy:sy + 32, sx:sx + 32, 0] += digit.numpy().squeeze()
+                x[t, sy : sy + 32, sx : sx + 32, 0] += digit.numpy().squeeze()
                 sy += dy
                 sx += dx
 
-        x[x > 1] = 1.
+        x[x > 1] = 1.0
         return x
-
-

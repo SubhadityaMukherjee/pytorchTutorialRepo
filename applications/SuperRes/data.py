@@ -11,9 +11,10 @@ from torchvision.transforms import Compose, CenterCrop, ToTensor, Resize
 
 # check if image
 
+
 def is_image_file(filename):
-    return any(filename.endswith(extension) for extension in [".png",".jpg",
-                                                              ".jpeg"])
+    return any(filename.endswith(extension) for extension in [".png", ".jpg", ".jpeg"])
+
 
 # open a single image and convert it into YCbCr
 """
@@ -22,20 +23,23 @@ def is_image_file(filename):
 combinations of a brightness signal and two chroma signals.)
 """
 
+
 def load_img(filepath):
-    img = Image.open(filepath).convert('YCbCr')
+    img = Image.open(filepath).convert("YCbCr")
     y, _, _ = img.split()
     return y
 
+
 # Custom dataloader to get data from folder
 
+
 class DatasetFromFolder(data.Dataset):
-    def __init__(self, image_dir, input_transform = None, target_transform =
-                 None):
+    def __init__(self, image_dir, input_transform=None, target_transform=None):
         super(DatasetFromFolder, self).__init__()
 
-        self.image_filenames = [join(image_dir, x) for x in listdir(image_dir)
-                               if is_image_file(x)]
+        self.image_filenames = [
+            join(image_dir, x) for x in listdir(image_dir) if is_image_file(x)
+        ]
         self.input_transform = input_transform
         self.target_transform = target_transform
 
@@ -46,25 +50,28 @@ class DatasetFromFolder(data.Dataset):
             input = self.input_transform(input)
         if self.target_transform:
             target = self.target_transform(target)
-        
+
         return input, target
-    
+
     def __len__(self):
         return len(self.image_filenames)
+
 
 # Get valid crop size
 def calculate_valid_crop_size(crop_size, upscale_factor):
     return crop_size - (crop_size % upscale_factor)
+
 
 # Input batch transforms
 def input_transform(crop_size, upscale_factor):
     return Compose(
         [
             CenterCrop(crop_size),
-            Resize(crop_size//upscale_factor),
+            Resize(crop_size // upscale_factor),
             ToTensor(),
         ]
     )
+
 
 # Output batch transforms
 def target_transform(crop_size):
@@ -75,21 +82,24 @@ def target_transform(crop_size):
         ]
     )
 
+
 def get_training_set(args, upscale_factor):
     root_dir = args.data_path
     train_dir = join(root_dir, "train")
     crop_size = calculate_valid_crop_size(256, upscale_factor)
-    return DatasetFromFolder(train_dir, input_transform =
-                             input_transform(crop_size, upscale_factor),
-                             target_transform = target_transform(crop_size))
+    return DatasetFromFolder(
+        train_dir,
+        input_transform=input_transform(crop_size, upscale_factor),
+        target_transform=target_transform(crop_size),
+    )
+
 
 def get_test_set(args, upscale_factor):
     root_dir = args.data_path
     test_dir = join(root_dir, "test")
     crop_size = calculate_valid_crop_size(256, upscale_factor)
-    return DatasetFromFolder(test_dir, input_transform =
-                             input_transform(crop_size, upscale_factor),
-                             target_transform = target_transform(crop_size))
-
-
-
+    return DatasetFromFolder(
+        test_dir,
+        input_transform=input_transform(crop_size, upscale_factor),
+        target_transform=target_transform(crop_size),
+    )

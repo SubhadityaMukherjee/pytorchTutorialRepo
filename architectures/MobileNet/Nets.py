@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class Net(nn.Module):
     def __init__(self, num_classes):
         super(Net, self).__init__()
@@ -11,21 +12,23 @@ class Net(nn.Module):
             nn.ReLU(inplace=True),
         )
         self.lin1 = nn.Linear(1024, 100)
-        self.convn = nn.Sequential(  # depthwise when changing from a smaller to bigger layer
-            self.conv_block(32, 64, 1),
-            self.conv_block(64, 128, 2),
-            self.conv_block(128, 128, 1),
-            self.conv_block(128, 256, 2),
-            self.conv_block(256, 256, 1),
-            self.conv_block(256, 512, 2),
-            self.conv_block(512, 512, 1),
-            self.conv_block(512, 512, 1),
-            self.conv_block(512, 512, 1),
-            self.conv_block(512, 512, 1),
-            self.conv_block(512, 512, 1),
-            self.conv_block(512, 1024, 2),
-            self.conv_block(1024, 1024, 1),
-            nn.AvgPool2d(4),
+        self.convn = (
+            nn.Sequential(  # depthwise when changing from a smaller to bigger layer
+                self.conv_block(32, 64, 1),
+                self.conv_block(64, 128, 2),
+                self.conv_block(128, 128, 1),
+                self.conv_block(128, 256, 2),
+                self.conv_block(256, 256, 1),
+                self.conv_block(256, 512, 2),
+                self.conv_block(512, 512, 1),
+                self.conv_block(512, 512, 1),
+                self.conv_block(512, 512, 1),
+                self.conv_block(512, 512, 1),
+                self.conv_block(512, 512, 1),
+                self.conv_block(512, 1024, 2),
+                self.conv_block(1024, 1024, 1),
+                nn.AvgPool2d(4),
+            )
         )
 
     def conv_block(self, inb, out, stride):
@@ -47,10 +50,13 @@ class Net(nn.Module):
         x = self.lin1(x)
 
         return x
+
+
 import hiddenlayer as hl
 from torch.autograd import Variable
+
 x = Variable(torch.rand(1, 1, 28, 28))
 n = Net()
 n.eval()
 h = hl.build_graph(n, x)
-h.save('gp.png')
+h.save("gp.png")

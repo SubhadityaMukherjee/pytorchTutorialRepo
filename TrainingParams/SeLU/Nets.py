@@ -8,9 +8,10 @@ class SELU(nn.Module):
         super(SELU, self).__init__()
         self.α = 1.6732632423543772848170429916717
         self.scale = 1.0507009873554804934193349852946
+
     def forward(self, x):
         temp1 = self.scale * F.relu(x)
-        temp2 = self.scale * self.α * (F.elu(-1*F.relu(-1*x)))
+        temp2 = self.scale * self.α * (F.elu(-1 * F.relu(-1 * x)))
         return temp1 + temp2
 
 
@@ -74,10 +75,13 @@ class Net(nn.Module):
         x = self.classif(x)
 
         return x
+
+
 import hiddenlayer as hl
 from torch.autograd import Variable
+
 x = Variable(torch.rand(1, 1, 28, 28))
 n = Net()
 n.eval()
 h = hl.build_graph(n, x)
-h.save('gp.png')
+h.save("gp.png")

@@ -36,6 +36,7 @@ class fire(nn.Module):
         out = self.relu2(out)
         return out
 
+
 class Net(nn.Module):
     def __init__(self, num_classes):
         super(Net, self).__init__()
@@ -55,7 +56,7 @@ class Net(nn.Module):
         self.fire9 = fire(512, 64, 256)
         self.conv2 = nn.Conv2d(512, 10, kernel_size=1, stride=1)
         self.avg_pool = nn.AvgPool2d(kernel_size=4, stride=4)
-        
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.in_channels
@@ -81,14 +82,17 @@ class Net(nn.Module):
         x = self.fire9(x)
         x = self.conv2(x)
         x = self.avg_pool(x)
-#         x = torch.flatten(x)
-#         print(x.shape)
+        #         x = torch.flatten(x)
+        #         print(x.shape)
         x = x.view(x.size(0), -1)
-        return x        
+        return x
+
+
 import hiddenlayer as hl
 from torch.autograd import Variable
+
 x = Variable(torch.rand(1, 1, 28, 28))
 n = Net()
 n.eval()
 h = hl.build_graph(n, x)
-h.save('gp.png')
+h.save("gp.png")

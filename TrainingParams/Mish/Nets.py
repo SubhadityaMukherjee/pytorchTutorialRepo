@@ -6,8 +6,10 @@ import torch.nn.functional as F
 class mish(nn.Module):
     def __init__(self):
         super(mish, self).__init__()
+
     def forward(self, x):
-        return x*torch.sigmoid(x) 
+        return x * torch.sigmoid(x)
+
 
 class Net(nn.Module):
     def __init__(self, num_classes):
@@ -69,10 +71,13 @@ class Net(nn.Module):
         x = self.classif(x)
 
         return x
+
+
 import hiddenlayer as hl
 from torch.autograd import Variable
+
 x = Variable(torch.rand(1, 1, 28, 28))
 n = Net()
 n.eval()
 h = hl.build_graph(n, x)
-h.save('gp.png')
+h.save("gp.png")

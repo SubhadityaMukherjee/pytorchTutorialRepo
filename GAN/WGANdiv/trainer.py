@@ -12,43 +12,72 @@ import torchsnooper
 from torchvision.utils import save_image
 
 
-
-Tensor = torch.cuda.FloatTensor 
+Tensor = torch.cuda.FloatTensor
 # @torchsnooper.snoop()
-# 
-def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,optimizerG, batches_done, k,p):
-    device = torch.device("cuda") # Sending to GPU
+#
+def train(
+    args,
+    device,
+    train_loader,
+    epoch,
+    netD,
+    netG,
+    nz,
+    ndf,
+    nc,
+    optimizerD,
+    optimizerG,
+    batches_done,
+    k,
+    p,
+):
+    device = torch.device("cuda")  # Sending to GPU
 
     for i, (imgs, _) in tqdm(enumerate(train_loader), 0):
-        real_imgs = Variable(imgs.type(Tensor), requires_grad = True)
-        
+        real_imgs = Variable(imgs.type(Tensor), requires_grad=True)
+
         # Discriminator
 
         optimizerD.zero_grad()
-        z = Variable(Tensor(np.random.normal(0, 1, (imgs.shape[0], 100)))) # 100 -> Latent
-        fake_imgs = netG(z) # Batch
-        
-        real_validity = netD(real_imgs) # real ims
-        fake_validity = netD(fake_imgs) # fake im
-         
+        z = Variable(
+            Tensor(np.random.normal(0, 1, (imgs.shape[0], 100)))
+        )  # 100 -> Latent
+        fake_imgs = netG(z)  # Batch
+
+        real_validity = netD(real_imgs)  # real ims
+        fake_validity = netD(fake_imgs)  # fake im
+
         # This is new
 
         # Get Wdiv
-        real_grad_out = Variable(Tensor(real_imgs.size(0), 1).fill_(1.0), requires_grad= False)
+        real_grad_out = Variable(
+            Tensor(real_imgs.size(0), 1).fill_(1.0), requires_grad=False
+        )
         real_grad = autograd.grad(
-            real_validity, real_imgs, real_grad_out, create_graph = True , retain_graph = True, only_inputs=True
+            real_validity,
+            real_imgs,
+            real_grad_out,
+            create_graph=True,
+            retain_graph=True,
+            only_inputs=True,
         )[0]
-        real_grad_norm = real_grad.view(real_grad.size(0), -1).pow(2).sum(1)**(p/2)
+        real_grad_norm = real_grad.view(real_grad.size(0), -1).pow(2).sum(1) ** (p / 2)
 
-        fake_grad_out = Variable(Tensor(fake_imgs.size(0), 1).fill_(1.0), requires_grad= False)
+        fake_grad_out = Variable(
+            Tensor(fake_imgs.size(0), 1).fill_(1.0), requires_grad=False
+        )
         fake_grad = autograd.grad(
-            fake_validity, fake_imgs, real_grad_out, create_graph = True , retain_graph = True, only_inputs=True
+            fake_validity,
+            fake_imgs,
+            real_grad_out,
+            create_graph=True,
+            retain_graph=True,
+            only_inputs=True,
         )[0]
-        fake_grad_norm = fake_grad.view(fake_grad.size(0), -1).pow(2).sum(1)**(p/2)
+        fake_grad_norm = fake_grad.view(fake_grad.size(0), -1).pow(2).sum(1) ** (p / 2)
 
-        div_gp = torch.mean(real_grad_norm + fake_grad_norm) * k/2
-                
-        
+        div_gp = torch.mean(real_grad_norm + fake_grad_norm) * k / 2
+
         # Adversarial loss
         d_loss = -torch.mean(real_validity) + torch.mean(fake_validity) + div_gp
         d_loss.backward()
@@ -66,10 +95,8 @@ def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,
             g_loss.backward()
             optimizerG.step()
 
-            print(
-                f"D loss: {d_loss.item()} ; G loss: {g_loss.item()}"
-            )
+            print(f"D loss: {d_loss.item()} ; G loss: {g_loss.item()}")
 
-            if batches_done % args.log_interval ==0:                 
+            if batches_done % args.log_interval == 0:
                 save_image(fake_imgs.data[:25], f"outputs/{batches_done}.png")
         batches_done += args.CRITIC_ITERS

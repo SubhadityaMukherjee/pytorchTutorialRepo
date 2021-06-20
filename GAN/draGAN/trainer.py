@@ -11,17 +11,19 @@ from torch.autograd import Variable
 import torchsnooper
 from torchvision.utils import save_image
 
-Tensor = torch.cuda.FloatTensor 
+Tensor = torch.cuda.FloatTensor
 
-# This is new 
+# This is new
 # @torchsnooper.snoop()
 def compute_gradient_penalty(D, X, lambda_gp):
     # Random weight term for interpolation between real and fake samples
     device = torch.device("cuda")
-    alpha = Tensor(np.random.random(size = X.shape)).to(device)
+    alpha = Tensor(np.random.random(size=X.shape)).to(device)
     # Get random interpolation between real and fake samples
-    interpolates = alpha * X + ((1 - alpha) * (X + 0.5 * X.std() * torch.rand(X.size()).to(device))) 
-    interpolates = Variable(interpolates, requires_grad = True)
+    interpolates = alpha * X + (
+        (1 - alpha) * (X + 0.5 * X.std() * torch.rand(X.size()).to(device))
+    )
+    interpolates = Variable(interpolates, requires_grad=True)
 
     d_interpolates = D(interpolates)
     fake = Variable(Tensor(X.shape[0], 1).fill_(1.0), requires_grad=False)
@@ -34,15 +36,28 @@ def compute_gradient_penalty(D, X, lambda_gp):
         retain_graph=True,
         only_inputs=True,
     )[0]
-    gradient_penalty = lambda_gp * ((gradients.norm(2, dim=1) - 1) ** 2).mean() 
-    
+    gradient_penalty = lambda_gp * ((gradients.norm(2, dim=1) - 1) ** 2).mean()
+
     return gradient_penalty
 
 
-
 # @torchsnooper.snoop()
-def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,optimizerG, batches_done, lambda_gp):
-    device = torch.device("cuda") # Sending to GPU
+def train(
+    args,
+    device,
+    train_loader,
+    epoch,
+    netD,
+    netG,
+    nz,
+    ndf,
+    nc,
+    optimizerD,
+    optimizerG,
+    batches_done,
+    lambda_gp,
+):
+    device = torch.device("cuda")  # Sending to GPU
     adversarial_loss = torch.nn.BCELoss().to(device)
     for i, (imgs, _) in tqdm(enumerate(train_loader), 0):
         imgs = imgs.to(device)
@@ -83,10 +98,8 @@ def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,
 
         optimizerD.step()
 
-        print(
-                f"D loss: {d_loss.item()} ; G loss: {g_loss.item()}"
-            )
+        print(f"D loss: {d_loss.item()} ; G loss: {g_loss.item()}")
 
-        if batches_done % args.log_interval ==0:                 
-                save_image(gen_imgs.data, f"outputs/{batches_done}.png", normalize=True)
+        if batches_done % args.log_interval == 0:
+            save_image(gen_imgs.data, f"outputs/{batches_done}.png", normalize=True)
         batches_done += args.CRITIC_ITERS

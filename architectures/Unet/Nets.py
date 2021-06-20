@@ -14,6 +14,7 @@ def conv_layer(in_channels, out_channels, kernel, padding):
         nn.ReLU(inplace=True),
     )
 
+
 # Main network
 
 
@@ -39,17 +40,16 @@ class Net(nn.Module):
         self.layer4 = self.base_layers[7]
         self.layer4_1x1 = conv_layer(512, 512, 1, 0)
 
-        self.upsample = nn.Upsample(
-            scale_factor=2, mode='bilinear', align_corners=True)
+        self.upsample = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
 
-        self.conv_up3 = conv_layer(256+512, 512, 3, 1)
-        self.conv_up2 = conv_layer(128+512, 256, 3, 1)
-        self.conv_up1 = conv_layer(64+256, 256, 3, 1)
-        self.conv_up0 = conv_layer(64+256, 128, 3, 1)
+        self.conv_up3 = conv_layer(256 + 512, 512, 3, 1)
+        self.conv_up2 = conv_layer(128 + 512, 256, 3, 1)
+        self.conv_up1 = conv_layer(64 + 256, 256, 3, 1)
+        self.conv_up0 = conv_layer(64 + 256, 128, 3, 1)
 
         self.conv_original_size0 = conv_layer(3, 64, 3, 1)
         self.conv_original_size1 = conv_layer(64, 64, 3, 1)
-        self.conv_original_size2 = conv_layer(64+128, 64, 3, 1)
+        self.conv_original_size2 = conv_layer(64 + 128, 64, 3, 1)
 
         self.conv_last = nn.Conv2d(64, n_class, 1)
 
@@ -103,12 +103,15 @@ python -c "from Nets import *; arch_print >> architecture.txt"
 
 
 def arch_print(n_classes=3):
-    ne = Net(n_classes).to('cuda')
-    summary(ne.to('cuda'), input_size=(3, 224, 224))
+    ne = Net(n_classes).to("cuda")
+    summary(ne.to("cuda"), input_size=(3, 224, 224))
+
+
 import hiddenlayer as hl
 from torch.autograd import Variable
+
 x = Variable(torch.rand(1, 1, 28, 28))
 n = Net()
 n.eval()
 h = hl.build_graph(n, x)
-h.save('gp.png')
+h.save("gp.png")

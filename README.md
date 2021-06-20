@@ -55,6 +55,7 @@ I have to admit that I relied pretty heavily on these repos. Do have a look at t
 - GAN/draGAN
 - GAN/lsGAN
 - GAN/relativisticGAN
+- Misc
 - TrainingParams
 - TrainingParams/BatchnormOnlyBatchnorm
 - TrainingParams/FocalLoss
@@ -70,7 +71,9 @@ I have to admit that I relied pretty heavily on these repos. Do have a look at t
 - applications/LSTMcosineWave
 - applications/SuperRes
 - applications/basicTextClassification
+- applications/coronahack
 - applications/faceRecog
+- applications/fishClassification
 - applications/jigsawToxicCommentClassification
 - applications/leafDiseaseClassification
 - applications/simpleRecommendationSystem

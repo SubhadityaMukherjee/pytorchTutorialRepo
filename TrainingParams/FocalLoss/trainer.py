@@ -12,7 +12,7 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
         self.alpha = alpha
         if isinstance(alpha, (float, int)):
-            self.alpha = torch.Tensor([alpha, 1-alpha])
+            self.alpha = torch.Tensor([alpha, 1 - alpha])
         if isinstance(alpha, list):
             self.alpha = torch.Tensor(alpha)
         self.size_average = size_average
@@ -34,9 +34,9 @@ class FocalLoss(nn.Module):
             if self.alpha.type() != input.data.type():
                 self.alpha = self.alpha.type_as(input.data)
             at = self.alpha.gather(0, target.data.view(-1))
-            logpt = logpt*Variable(at)
+            logpt = logpt * Variable(at)
 
-        loss = -1*(1-pt)**self.gamma*logpt
+        loss = -1 * (1 - pt) ** self.gamma * logpt
         if self.size_average:
             return loss.mean()
         else:
@@ -44,20 +44,19 @@ class FocalLoss(nn.Module):
 
 
 def train(args, model, device, train_loader, optimizer, epoch):
-    model.train() # Setting model to train
-    device = torch.device("cuda") # Sending to GPU
+    model.train()  # Setting model to train
+    device = torch.device("cuda")  # Sending to GPU
     for batch_idx, (data, target) in tqdm(enumerate(train_loader)):
         data, target = data.to(device), target.to(device)
-        optimizer.zero_grad() #Reset grads 
-        output = model(data) # Passing batch through model
+        optimizer.zero_grad()  # Reset grads
+        output = model(data)  # Passing batch through model
 
-        loss = FocalLoss()(output, target) # Will need to change everytime. Loss
+        loss = FocalLoss()(output, target)  # Will need to change everytime. Loss
 
-        loss.backward() # Backprop
-        optimizer.step() # Pass through optimizer
+        loss.backward()  # Backprop
+        optimizer.step()  # Pass through optimizer
 
         if batch_idx % args.log_interval == 0:
             print(loss.item())
             if args.dry_run:
                 break
-

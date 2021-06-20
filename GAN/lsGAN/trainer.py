@@ -11,12 +11,26 @@ from torch.autograd import Variable
 import torchsnooper
 from torchvision.utils import save_image
 
-Tensor = torch.cuda.FloatTensor 
+Tensor = torch.cuda.FloatTensor
 
 # @torchsnooper.snoop()
-def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,optimizerG, batches_done, lambda_gp):
-    device = torch.device("cuda") # Sending to GPU
-    adversarial_loss = torch.nn.MSELoss().to(device) # New
+def train(
+    args,
+    device,
+    train_loader,
+    epoch,
+    netD,
+    netG,
+    nz,
+    ndf,
+    nc,
+    optimizerD,
+    optimizerG,
+    batches_done,
+    lambda_gp,
+):
+    device = torch.device("cuda")  # Sending to GPU
+    adversarial_loss = torch.nn.MSELoss().to(device)  # New
     for i, (imgs, _) in tqdm(enumerate(train_loader), 0):
         imgs = imgs.to(device)
         valid = Variable(Tensor(imgs.shape[0], 1).fill_(1.0), requires_grad=False)
@@ -52,10 +66,10 @@ def train(args, device, train_loader, epoch, netD, netG,nz, ndf, nc, optimizerD,
 
         optimizerD.step()
 
-        print(
-                f"D loss: {d_loss.item()} ; G loss: {g_loss.item()}"
-            )
+        print(f"D loss: {d_loss.item()} ; G loss: {g_loss.item()}")
 
-        if batches_done % args.log_interval ==0:                 
-                save_image(gen_imgs.data[:25], f"outputs/{batches_done}.png", normalize=True)
+        if batches_done % args.log_interval == 0:
+            save_image(
+                gen_imgs.data[:25], f"outputs/{batches_done}.png", normalize=True
+            )
         batches_done += args.CRITIC_ITERS

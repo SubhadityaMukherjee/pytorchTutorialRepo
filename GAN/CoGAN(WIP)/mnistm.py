@@ -26,7 +26,15 @@ class MNISTM(data.Dataset):
     training_file = "mnist_m_train.pt"
     test_file = "mnist_m_test.pt"
 
-    def __init__(self, root, mnist_root="data", train=True, transform=None, target_transform=None, download=False):
+    def __init__(
+        self,
+        root,
+        mnist_root="data",
+        train=True,
+        transform=None,
+        target_transform=None,
+        download=False,
+    ):
         """Init MNIST-M dataset."""
         super(MNISTM, self).__init__()
         self.root = os.path.expanduser(root)
@@ -39,7 +47,9 @@ class MNISTM(data.Dataset):
             self.download()
 
         if not self._check_exists():
-            raise RuntimeError("Dataset not found." + " You can use download=True to download it")
+            raise RuntimeError(
+                "Dataset not found." + " You can use download=True to download it"
+            )
 
         if self.train:
             self.train_data, self.train_labels = torch.load(
@@ -84,7 +94,9 @@ class MNISTM(data.Dataset):
             return len(self.test_data)
 
     def _check_exists(self):
-        return os.path.exists(os.path.join(self.root, self.processed_folder, self.training_file)) and os.path.exists(
+        return os.path.exists(
+            os.path.join(self.root, self.processed_folder, self.training_file)
+        ) and os.path.exists(
             os.path.join(self.root, self.processed_folder, self.test_file)
         )
 
@@ -118,7 +130,9 @@ class MNISTM(data.Dataset):
             data = urllib.request.urlopen(self.url)
             with open(file_path, "wb") as f:
                 f.write(data.read())
-            with open(file_path.replace(".gz", ""), "wb") as out_f, gzip.GzipFile(file_path) as zip_f:
+            with open(file_path.replace(".gz", ""), "wb") as out_f, gzip.GzipFile(
+                file_path
+            ) as zip_f:
                 out_f.write(zip_f.read())
             os.unlink(file_path)
 
@@ -132,15 +146,23 @@ class MNISTM(data.Dataset):
         mnist_m_test_data = torch.ByteTensor(mnist_m_data[b"test"])
 
         # get MNIST labels
-        mnist_train_labels = datasets.MNIST(root=self.mnist_root, train=True, download=True).train_labels
-        mnist_test_labels = datasets.MNIST(root=self.mnist_root, train=False, download=True).test_labels
+        mnist_train_labels = datasets.MNIST(
+            root=self.mnist_root, train=True, download=True
+        ).train_labels
+        mnist_test_labels = datasets.MNIST(
+            root=self.mnist_root, train=False, download=True
+        ).test_labels
 
         # save MNIST-M dataset
         training_set = (mnist_m_train_data, mnist_train_labels)
         test_set = (mnist_m_test_data, mnist_test_labels)
-        with open(os.path.join(self.root, self.processed_folder, self.training_file), "wb") as f:
+        with open(
+            os.path.join(self.root, self.processed_folder, self.training_file), "wb"
+        ) as f:
             torch.save(training_set, f)
-        with open(os.path.join(self.root, self.processed_folder, self.test_file), "wb") as f:
+        with open(
+            os.path.join(self.root, self.processed_folder, self.test_file), "wb"
+        ) as f:
             torch.save(test_set, f)
 
         print("Done!")
