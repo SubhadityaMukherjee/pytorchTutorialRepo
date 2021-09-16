@@ -86,11 +86,13 @@ class ConvLSTMCell(nn.Module):
         self.padding = kernel_size[0] // 2, kernel_size[1] // 2
         self.bias = bias
 
-        self.conv = nn.Conv2d(in_channels=self.input_dim + self.hidden_dim,
-                              out_channels=4 * self.hidden_dim,
-                              kernel_size=self.kernel_size,
-                              padding=self.padding,
-                              bias=self.bias)
+        self.conv = nn.Conv2d(
+            in_channels=self.input_dim + self.hidden_dim,
+            out_channels=4 * self.hidden_dim,
+            kernel_size=self.kernel_size,
+            padding=self.padding,
+            bias=self.bias,
+        )
 
     def forward(self, input_tensor, cur_state):
         h_cur, c_cur = cur_state
@@ -98,9 +100,7 @@ class ConvLSTMCell(nn.Module):
         combined = torch.cat([input_tensor, h_cur], dim=1)
 
         combined_conv = self.conv(combined)
-        cc_i, cc_f, cc_o, cc_g = torch.split(combined_conv,
-                                             self.hidden_dim,
-                                             dim=1)
+        cc_i, cc_f, cc_o, cc_g = torch.split(combined_conv, self.hidden_dim, dim=1)
         i = torch.sigmoid(cc_i)
         f = torch.sigmoid(cc_f)
         o = torch.sigmoid(cc_o)
@@ -113,16 +113,22 @@ class ConvLSTMCell(nn.Module):
 
     def init_hidden(self, batch_size, image_size):
         height, width = image_size
-        return (torch.zeros(batch_size,
-                            self.hidden_dim,
-                            height,
-                            width,
-                            device=self.conv.weight.device),
-                torch.zeros(batch_size,
-                            self.hidden_dim,
-                            height,
-                            width,
-                            device=self.conv.weight.device))
+        return (
+            torch.zeros(
+                batch_size,
+                self.hidden_dim,
+                height,
+                width,
+                device=self.conv.weight.device,
+            ),
+            torch.zeros(
+                batch_size,
+                self.hidden_dim,
+                height,
+                width,
+                device=self.conv.weight.device,
+            ),
+        )
 
 
 # + hide_output=false run_control={"marked": true}
@@ -136,58 +142,49 @@ class EncoderDecoderConvLSTM(nn.Module):
         # Decoder (ConvLSTM) - takes Encoder Vector as input
         # Decoder (3D CNN) - produces regression predictions for our model
         """
-        self.encoder_1_convlstm = ConvLSTMCell(input_dim=in_chan,
-                                               hidden_dim=nf,
-                                               kernel_size=(3, 3),
-                                               bias=True)
+        self.encoder_1_convlstm = ConvLSTMCell(
+            input_dim=in_chan, hidden_dim=nf, kernel_size=(3, 3), bias=True
+        )
 
-        self.encoder_2_convlstm = ConvLSTMCell(input_dim=nf,
-                                               hidden_dim=nf,
-                                               kernel_size=(3, 3),
-                                               bias=True)
+        self.encoder_2_convlstm = ConvLSTMCell(
+            input_dim=nf, hidden_dim=nf, kernel_size=(3, 3), bias=True
+        )
 
         self.decoder_1_convlstm = ConvLSTMCell(
-            input_dim=nf,  # nf + 1
-            hidden_dim=nf,
-            kernel_size=(3, 3),
-            bias=True)
+            input_dim=nf, hidden_dim=nf, kernel_size=(3, 3), bias=True  # nf + 1
+        )
 
-        self.decoder_2_convlstm = ConvLSTMCell(input_dim=nf,
-                                               hidden_dim=nf,
-                                               kernel_size=(3, 3),
-                                               bias=True)
+        self.decoder_2_convlstm = ConvLSTMCell(
+            input_dim=nf, hidden_dim=nf, kernel_size=(3, 3), bias=True
+        )
 
-        self.decoder_CNN = nn.Conv3d(in_channels=nf,
-                                     out_channels=1,
-                                     kernel_size=(1, 3, 3),
-                                     padding=(0, 1, 1))
+        self.decoder_CNN = nn.Conv3d(
+            in_channels=nf, out_channels=1, kernel_size=(1, 3, 3), padding=(0, 1, 1)
+        )
 
-    def autoencoder(self, x, seq_len, future_step, h_t, c_t, h_t2, c_t2, h_t3,
-                    c_t3, h_t4, c_t4):
+    def autoencoder(
+        self, x, seq_len, future_step, h_t, c_t, h_t2, c_t2, h_t3, c_t3, h_t4, c_t4
+    ):
 
         outputs = []
 
         for t in range(seq_len):
             h_t, c_t = self.encoder_1_convlstm(
-                input_tensor=x[:, t, :, :],
-                cur_state=[h_t,
-                           c_t])  # we could concat to provide skip conn here
+                input_tensor=x[:, t, :, :], cur_state=[h_t, c_t]
+            )  # we could concat to provide skip conn here
             h_t2, c_t2 = self.encoder_2_convlstm(
-                input_tensor=h_t,
-                cur_state=[h_t2,
-                           c_t2])  # we could concat to provide skip conn here
+                input_tensor=h_t, cur_state=[h_t2, c_t2]
+            )  # we could concat to provide skip conn here
 
         encoder_vector = h_t2
 
         for t in range(future_step):
             h_t3, c_t3 = self.decoder_1_convlstm(
-                input_tensor=encoder_vector,
-                cur_state=[h_t3,
-                           c_t3])  # we could concat to provide skip conn here
+                input_tensor=encoder_vector, cur_state=[h_t3, c_t3]
+            )  # we could concat to provide skip conn here
             h_t4, c_t4 = self.decoder_2_convlstm(
-                input_tensor=h_t3,
-                cur_state=[h_t4,
-                           c_t4])  # we could concat to provide skip conn here
+                input_tensor=h_t3, cur_state=[h_t4, c_t4]
+            )  # we could concat to provide skip conn here
             encoder_vector = h_t4
             outputs += [h_t4]
 
@@ -202,17 +199,20 @@ class EncoderDecoderConvLSTM(nn.Module):
 
         b, seq_len, _, h, w = x.size()
 
-        h_t, c_t = self.encoder_1_convlstm.init_hidden(batch_size=b,
-                                                       image_size=(h, w))
-        h_t2, c_t2 = self.encoder_2_convlstm.init_hidden(batch_size=b,
-                                                         image_size=(h, w))
-        h_t3, c_t3 = self.decoder_1_convlstm.init_hidden(batch_size=b,
-                                                         image_size=(h, w))
-        h_t4, c_t4 = self.decoder_2_convlstm.init_hidden(batch_size=b,
-                                                         image_size=(h, w))
+        h_t, c_t = self.encoder_1_convlstm.init_hidden(batch_size=b, image_size=(h, w))
+        h_t2, c_t2 = self.encoder_2_convlstm.init_hidden(
+            batch_size=b, image_size=(h, w)
+        )
+        h_t3, c_t3 = self.decoder_1_convlstm.init_hidden(
+            batch_size=b, image_size=(h, w)
+        )
+        h_t4, c_t4 = self.decoder_2_convlstm.init_hidden(
+            batch_size=b, image_size=(h, w)
+        )
 
-        outputs = self.autoencoder(x, seq_len, future_seq, h_t, c_t, h_t2,
-                                   c_t2, h_t3, c_t3, h_t4, c_t4)
+        outputs = self.autoencoder(
+            x, seq_len, future_seq, h_t, c_t, h_t2, c_t2, h_t3, c_t3, h_t4, c_t4
+        )
 
         #         print(outputs)
         return outputs
@@ -221,12 +221,14 @@ class EncoderDecoderConvLSTM(nn.Module):
 # + hide_output=false run_control={"marked": true}
 # @tsp.snoop()
 class LitModel(pl.LightningModule):
-    def __init__(self,
-                 n_hidden_dims,
-                 learning_rate=1e-4,
-                 weight_decay=0.0001,
-                 hparams=None,
-                 batch_size=64):
+    def __init__(
+        self,
+        n_hidden_dims,
+        learning_rate=1e-4,
+        weight_decay=0.0001,
+        hparams=None,
+        batch_size=64,
+    ):
         super(LitModel, self).__init__()
 
         # log hyperparameters
@@ -240,8 +242,7 @@ class LitModel(pl.LightningModule):
         self.n_steps_past = 10
         self.n_steps_ahead = 10
         self.n_hidden_dims = n_hidden_dims
-        self.conv_lstm_model = EncoderDecoderConvLSTM(nf=self.n_hidden_dims,
-                                                      in_chan=1)
+        self.conv_lstm_model = EncoderDecoderConvLSTM(nf=self.n_hidden_dims, in_chan=1)
 
     def create_video(self, x, y_hat, y):
 
@@ -252,78 +253,83 @@ class LitModel(pl.LightningModule):
         difference = (torch.pow(y_hat[0] - y[0], 2)).detach().cpu()
         zeros = torch.zeros(difference.shape)
         difference_plot = torch.cat(
-            [zeros.cpu().unsqueeze(0),
-             difference.unsqueeze(0).cpu()], dim=1)[0].unsqueeze(1)
+            [zeros.cpu().unsqueeze(0), difference.unsqueeze(0).cpu()], dim=1
+        )[0].unsqueeze(1)
 
         final_image = torch.cat([preds, y_plot, difference_plot], dim=0)
 
-        grid = torchvision.utils.make_grid(final_image,
-                                           nrow=self.n_steps_past +
-                                           self.n_steps_ahead)
+        grid = torchvision.utils.make_grid(
+            final_image, nrow=self.n_steps_past + self.n_steps_ahead
+        )
 
         return grid
 
-#     @tsp.snoop()
+    #     @tsp.snoop()
 
     def forward(self, x):
         output = self.conv_lstm_model(x, future_seq=self.n_steps_ahead)
         return output
 
-#     @tsp.snoop()
+    #     @tsp.snoop()
 
     def configure_optimizers(self):
         #         print(list(self.parameters())
-        optimizer = torch.optim.Adam(self.parameters(),
-                                     lr=self.learning_rate,
-                                     weight_decay=self.weight_decay)
+        optimizer = torch.optim.Adam(
+            self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay
+        )
 
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                    step_size=2,
-                                                    gamma=0.1)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)
 
         return ([optimizer], [scheduler])
 
-
-#     @tsp.snoop()
+    #     @tsp.snoop()
 
     def training_step(self, batch, batch_idx):
-        x, y = batch[:, 0:self.
-                     n_steps_past, :, :, :], batch[:, self.
-                                                   n_steps_past:, :, :, :],
+        x, y = (
+            batch[:, 0 : self.n_steps_past, :, :, :],
+            batch[:, self.n_steps_past :, :, :, :],
+        )
         x = x.permute(0, 1, 4, 2, 3)
         y = y.squeeze()
         preds = self(x).squeeze()
         loss = self.criterion(preds, y)
-        lr_saved = self.trainer.optimizers[0].param_groups[-1]['lr']
+        lr_saved = self.trainer.optimizers[0].param_groups[-1]["lr"]
         lr_saved = torch.scalar_tensor(lr_saved).cuda()
         final_image = self.create_video(x, preds, y)
-#         plt.plot(final_image)
-#         plt.show()
-#         plt.savefig(f"./{batch_idx}_im.jpg")
+        #         plt.plot(final_image)
+        #         plt.show()
+        #         plt.savefig(f"./{batch_idx}_im.jpg")
         self.logger.experiment.add_image(
-                    'epoch_' + str(self.current_epoch) + '_step' + str(self.global_step) + '_generated_images',
-                    final_image, 0)
+            "epoch_"
+            + str(self.current_epoch)
+            + "_step"
+            + str(self.global_step)
+            + "_generated_images",
+            final_image,
+            0,
+        )
         plt.close()
 
-        self.log('train_loss', loss)
-        self.log('lr_saved', self.learning_rate)
+        self.log("train_loss", loss)
+        self.log("lr_saved", self.learning_rate)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch[:, 0:self.
-                     n_steps_past, :, :, :], batch[:, self.
-                                                   n_steps_past:, :, :, :],
+        x, y = (
+            batch[:, 0 : self.n_steps_past, :, :, :],
+            batch[:, self.n_steps_past :, :, :, :],
+        )
         x = x.permute(0, 1, 4, 2, 3)
         y = y.squeeze()
         preds = self(x).squeeze()
         loss = self.criterion(preds, y)
-        lr_saved = self.trainer.optimizers[0].param_groups[-1]['lr']
+        lr_saved = self.trainer.optimizers[0].param_groups[-1]["lr"]
         lr_saved = torch.scalar_tensor(lr_saved).cuda()
-        self.log('val_loss', loss)
+        self.log("val_loss", loss)
 
     def validation_end(self, outputs):
-        avg_loss = torch.stack([x['validation_loss'] for x in outputs]).mean()
-        self.log('mean_val_loss', avg_loss)
+        avg_loss = torch.stack([x["validation_loss"] for x in outputs]).mean()
+        self.log("mean_val_loss", avg_loss)
 
 
 # -
@@ -332,10 +338,12 @@ class LitModel(pl.LightningModule):
 
 # + hide_output=false run_control={"marked": true}
 class ImDataModule(pl.LightningDataModule):
-    def __init__(self,
-                 batch_size,
-                 data_dir: str = "/media/hdd/Datasets/movingMNIST/",
-                 img_size=(256, 256)):
+    def __init__(
+        self,
+        batch_size,
+        data_dir: str = "/media/hdd/Datasets/movingMNIST/",
+        img_size=(256, 256),
+    ):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -344,30 +352,31 @@ class ImDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
 
-        self.train_dataset = MovingMNIST(train=True,
-                                         data_root=self.data_dir,
-                                         seq_len=self.n_steps_past +
-                                         self.n_steps_ahead,
-                                         image_size=64,
-                                         num_digits=2)
+        self.train_dataset = MovingMNIST(
+            train=True,
+            data_root=self.data_dir,
+            seq_len=self.n_steps_past + self.n_steps_ahead,
+            image_size=64,
+            num_digits=2,
+        )
 
-        self.valid_dataset = MovingMNIST(train=False,
-                                         data_root=self.data_dir,
-                                         seq_len=self.n_steps_past +
-                                         self.n_steps_ahead,
-                                         image_size=64,
-                                         num_digits=2)
+        self.valid_dataset = MovingMNIST(
+            train=False,
+            data_root=self.data_dir,
+            seq_len=self.n_steps_past + self.n_steps_ahead,
+            image_size=64,
+            num_digits=2,
+        )
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset,
-                          batch_size=self.batch_size,
-                          num_workers=12,
-                          shuffle=True)
+        return DataLoader(
+            self.train_dataset, batch_size=self.batch_size, num_workers=12, shuffle=True
+        )
 
     def val_dataloader(self):
-        return DataLoader(self.valid_dataset,
-                          batch_size=self.batch_size,
-                          num_workers=12)
+        return DataLoader(
+            self.valid_dataset, batch_size=self.batch_size, num_workers=12
+        )
 
 
 # -
@@ -384,32 +393,33 @@ class_ids = dm.setup()
 
 model = LitModel(batch_size=batch_size, n_hidden_dims=n_hidden_dims)
 # logger = CSVLogger("logs", name="lstmEncDec")
-logger = TensorBoardLogger(save_dir = "logs")
+logger = TensorBoardLogger(save_dir="logs")
 
 # + hide_output=false run_control={"marked": true}
-trainer = pl.Trainer(auto_select_gpus=True,
-                     gpus=1,
-                     precision=16,
-                     profiler=True,
-                     max_epochs=1,
-                     callbacks=[pl.callbacks.ProgressBar()],
-                     automatic_optimization=True,
-                     enable_pl_optimizer=True,
-                     accumulate_grad_batches=16,
-                     logger=logger,
-                     accelerator = 'ddp',
-                     plugins = 'ddp_sharded')
+trainer = pl.Trainer(
+    auto_select_gpus=True,
+    gpus=1,
+    precision=16,
+    profiler=True,
+    max_epochs=1,
+    callbacks=[pl.callbacks.ProgressBar()],
+    automatic_optimization=True,
+    enable_pl_optimizer=True,
+    accumulate_grad_batches=16,
+    logger=logger,
+    accelerator="ddp",
+    plugins="ddp_sharded",
+)
 
 # + hide_output=false run_control={"marked": true}
 trainer.fit(model, dm)
 # -
 
 
-
 # + run_control={"marked": true}
 trainer.test()
 
-trainer.save_checkpoint('model1.ckpt')
+trainer.save_checkpoint("model1.ckpt")
 # -
 
 # # Inference
@@ -443,19 +453,3 @@ trainer.save_checkpoint('model1.ckpt')
 
 # label_map[int(torch.argmax(y_hat, dim=1))]
 # -
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

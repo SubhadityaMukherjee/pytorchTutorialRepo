@@ -29,10 +29,12 @@ from pytorch_lightning import loggers as pl_loggers
 import numpy as np
 import pickle
 import os
+
 os.environ["TORCH_HOME"] = "~/Desktop/Datasets/"
 
 
 # # Create model
+
 
 class LitModel(pl.LightningModule):
     def __init__(self, input_shape, learning_rate=2e-4):
@@ -44,17 +46,14 @@ class LitModel(pl.LightningModule):
         self.dim = input_shape
 
         self.encoder = nn.Sequential(
-            nn.Linear(np.prod(self.dim), 64),
-            nn.ReLU(),
-            nn.Linear(64, 3)
+            nn.Linear(np.prod(self.dim), 64), nn.ReLU(), nn.Linear(64, 3)
         )
         self.decoder = nn.Sequential(
-            nn.Linear(3, 64),
-            nn.ReLU(),
-            nn.Linear(64, np.prod(self.dim))
+            nn.Linear(3, 64), nn.ReLU(), nn.Linear(64, np.prod(self.dim))
         )
+
     def forward(self, x):
-        print(self.dim , np.prod(self.dim))
+        print(self.dim, np.prod(self.dim))
         # in lightning, forward defines the prediction/inference actions
         embedding = self.encoder(x)
         return embedding
@@ -65,27 +64,26 @@ class LitModel(pl.LightningModule):
         z = self.encoder(x)
         x_hat = self.decoder(z)
         loss = F.mse_loss(x_hat, x)
-        self.log('train_loss_step', loss)
+        self.log("train_loss_step", loss)
         return loss
-        
+
     def val_step(self, batch, batch_idx):
         x, y = batch
         x = x.view(x.size(0), -1)
         z = self.encoder(x)
         x_hat = self.decoder(z)
         loss = F.mse_loss(x_hat, x)
-        self.log('val_loss_step', loss)
+        self.log("val_loss_step", loss)
         return loss
-    
+
     def test_step(self, batch, batch_idx):
         x, y = batch
         x = x.view(x.size(0), -1)
         z = self.encoder(x)
         x_hat = self.decoder(z)
         loss = F.mse_loss(x_hat, x)
-        self.log('test_loss_step', loss)
+        self.log("test_loss_step", loss)
         return loss
- 
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
@@ -94,28 +92,35 @@ class LitModel(pl.LightningModule):
 
 # # Load data
 
+
 class ImDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, data_dir: str = '/home/eragon/Desktop/Datasets/LandscapeSort/'):
+    def __init__(
+        self, batch_size, data_dir: str = "/home/eragon/Desktop/Datasets/LandscapeSort/"
+    ):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
 
         # Augmentation policy
-        self.augmentation = transforms.Compose([
-              transforms.RandomResizedCrop(size=256, scale=(0.8, 1.0)),
-              transforms.RandomRotation(degrees=15),
-              transforms.RandomHorizontalFlip(),
-              transforms.CenterCrop(size=224),
-              transforms.ToTensor(),
-              transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
-        ])
-        self.transform = transforms.Compose([
-              transforms.Resize(size=256),
-              transforms.CenterCrop(size=224),
-              transforms.ToTensor(),
-              transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
-        ])
-        
+        self.augmentation = transforms.Compose(
+            [
+                transforms.RandomResizedCrop(size=256, scale=(0.8, 1.0)),
+                transforms.RandomRotation(degrees=15),
+                transforms.RandomHorizontalFlip(),
+                transforms.CenterCrop(size=224),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ]
+        )
+        self.transform = transforms.Compose(
+            [
+                transforms.Resize(size=256),
+                transforms.CenterCrop(size=224),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ]
+        )
+
     def setup(self, stage=None):
         # build dataset
         im_dataset = ImageFolder(self.data_dir)
@@ -127,9 +132,11 @@ class ImDataModule(pl.LightningDataModule):
         self.val.dataset.transform = self.transform
         self.test.dataset.transform = self.transform
         return self.train.dataset.class_to_idx
-        
+
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, shuffle=True, num_workers=12)
+        return DataLoader(
+            self.train, batch_size=self.batch_size, shuffle=True, num_workers=12
+        )
 
     def val_dataloader(self):
         return DataLoader(self.val, batch_size=self.batch_size, num_workers=12)
@@ -148,36 +155,48 @@ val_imgs.shape, val_labels.shape
 
 # # Logs
 
-model = LitModel(( 3, 224, 224))
+model = LitModel((3, 224, 224))
 
-tb_logger = pl_loggers.TensorBoardLogger('./lightning_logs/')
+tb_logger = pl_loggers.TensorBoardLogger("./lightning_logs/")
 
-trainer = pl.Trainer(auto_select_gpus=True, gpus=1,
-                     precision=16, profiler=False,max_epochs=100,
-                    callbacks = [pl.callbacks.ProgressBar()],
-                     automatic_optimization=True,logger = tb_logger,enable_pl_optimizer=True)
+trainer = pl.Trainer(
+    auto_select_gpus=True,
+    gpus=1,
+    precision=16,
+    profiler=False,
+    max_epochs=100,
+    callbacks=[pl.callbacks.ProgressBar()],
+    automatic_optimization=True,
+    logger=tb_logger,
+    enable_pl_optimizer=True,
+)
 
 trainer.fit(model, dm)
 
 trainer.test()
 
-trainer.save_checkpoint('model1.ckpt')
+trainer.save_checkpoint("model1.ckpt")
 
 # # Inference
 
 from PIL import Image
 
-transform = transforms.Compose([
-              transforms.Resize(size=224),
-              transforms.ToTensor(),
-              transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
-        ])
+transform = transforms.Compose(
+    [
+        transforms.Resize(size=224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]
+)
 
-m1 = LitModel.load_from_checkpoint('model1.ckpt')
+m1 = LitModel.load_from_checkpoint("model1.ckpt")
 
 t_path = "/home/eragon/Documents/"
 
-im_sh = Image.open("/home/eragon/Desktop/Datasets/BSDS300/images/train/2092.jpg").convert('RGB');im_sh.resize((128,128))
+im_sh = Image.open(
+    "/home/eragon/Desktop/Datasets/BSDS300/images/train/2092.jpg"
+).convert("RGB")
+im_sh.resize((128, 128))
 
 test = transform(im_sh)
 
@@ -185,16 +204,8 @@ test.size()
 
 m1(test)
 
-224*224*3
+224 * 224 * 3
 
 
-
-pred = class_ids[int(torch.argmax(m1(test), 1))];pred
-
-
-
-
-
-
-
-
+pred = class_ids[int(torch.argmax(m1(test), 1))]
+pred

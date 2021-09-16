@@ -19,8 +19,10 @@
 # %matplotlib inline
 
 import os
-os.environ['TORCH_HOME'] = "/media/hdd/Datasets/"
+
+os.environ["TORCH_HOME"] = "/media/hdd/Datasets/"
 import sys
+
 sys.path.append("/media/hdd/github/sprintdl/")
 # -
 
@@ -28,7 +30,7 @@ from sprintdl.main import *
 from sprintdl.nets import *
 from efficientnet_pytorch import EfficientNet
 
-device = torch.device('cuda',0)
+device = torch.device("cuda", 0)
 import torch
 import math
 
@@ -45,35 +47,37 @@ bs = 64
 
 il = ImageList.from_files(fpath, tfms=tfms)
 
-sd = SplitData.split_by_func(il, partial(random_splitter, p_valid = .2))
+sd = SplitData.split_by_func(il, partial(random_splitter, p_valid=0.2))
 ll = label_by_func(sd, lambda x: str(x).split("/")[-2], proc_y=CategoryProcessor())
 
 ll
 
-n_classes = len(set(ll.train.y.items)); n_classes
+n_classes = len(set(ll.train.y.items))
+n_classes
 
 data = ll.to_databunch(bs, c_in=3, c_out=2)
 
 show_batch(data, 4)
 
 # +
-lr = .001
+lr = 0.001
 pct_start = 0.5
 phases = create_phases(pct_start)
-sched_lr  = combine_scheds(phases, cos_1cycle_anneal(lr/10., lr, lr/1e5))
+sched_lr = combine_scheds(phases, cos_1cycle_anneal(lr / 10.0, lr, lr / 1e5))
 sched_mom = combine_scheds(phases, cos_1cycle_anneal(0.95, 0.85, 0.95))
 
 cbfs = [
-    partial(AvgStatsCallback,accuracy),
-    partial(ParamScheduler, 'lr', sched_lr),
-    partial(ParamScheduler, 'mom', sched_mom),
-        partial(BatchTransformXCallback, norm_imagenette),
+    partial(AvgStatsCallback, accuracy),
+    partial(ParamScheduler, "lr", sched_lr),
+    partial(ParamScheduler, "mom", sched_mom),
+    partial(BatchTransformXCallback, norm_imagenette),
     ProgressCallback,
     Recorder,
-#     MixUp,
-       partial(CudaCallback, device)]
+    #     MixUp,
+    partial(CudaCallback, device),
+]
 
-loss_func=LabelSmoothingCrossEntropy()
+loss_func = LabelSmoothingCrossEntropy()
 # arch = partial(xresnet18, n_classes)
 arch = get_vision_model("resnet34", n_classes=n_classes, pretrained=True)
 
@@ -87,7 +91,7 @@ opt_func = adam_opt(mom=0.9, mom_sqr=0.99, eps=1e-6, wd=1e-2)
 clear_memory()
 
 # learn = get_learner(nfs, data, lr, conv_layer, cb_funcs=cbfs)
-learn = Learner(arch,  data, loss_func, lr=lr, cb_funcs=cbfs, opt_func=opt_func)
+learn = Learner(arch, data, loss_func, lr=lr, cb_funcs=cbfs, opt_func=opt_func)
 
 # +
 # model_summary(learn, data)
@@ -98,18 +102,20 @@ learn.fit(1)
 save_model(learn, "m1", fpath)
 
 # +
-temp = Path('/media/hdd/Datasets/ArtClass/Popular/artgerm/10004370_1657536534486515_1883801324_n.jpg')
+temp = Path(
+    "/media/hdd/Datasets/ArtClass/Popular/artgerm/10004370_1657536534486515_1883801324_n.jpg"
+)
 
-get_class_pred(temp, learn ,ll, 128)
+get_class_pred(temp, learn, ll, 128)
 # -
 
-temp = Path('/home/eragon/Downloads/Telegram Desktop/IMG_1800.PNG')
+temp = Path("/home/eragon/Downloads/Telegram Desktop/IMG_1800.PNG")
 
-get_class_pred(temp, learn ,ll,128)
+get_class_pred(temp, learn, ll, 128)
 
-temp = Path('/home/eragon/Downloads/Telegram Desktop/IMG_20210106_180731.jpg')
+temp = Path("/home/eragon/Downloads/Telegram Desktop/IMG_20210106_180731.jpg")
 
-get_class_pred(temp, learn ,ll,128)
+get_class_pred(temp, learn, ll, 128)
 
 # # Digging in
 
@@ -120,30 +126,28 @@ learn.recorder.plot_lr()
 learn.recorder.plot_loss()
 
 
-
-
-
 # # Xresnet
 
 # +
-lr = .001
+lr = 0.001
 pct_start = 0.5
 phases = create_phases(pct_start)
-sched_lr  = combine_scheds(phases, cos_1cycle_anneal(lr/10., lr, lr/1e5))
+sched_lr = combine_scheds(phases, cos_1cycle_anneal(lr / 10.0, lr, lr / 1e5))
 sched_mom = combine_scheds(phases, cos_1cycle_anneal(0.95, 0.85, 0.95))
 
 cbfs = [
-    partial(AvgStatsCallback,accuracy),
-    partial(ParamScheduler, 'lr', sched_lr),
-    partial(ParamScheduler, 'mom', sched_mom),
-        partial(BatchTransformXCallback, norm_imagenette),
+    partial(AvgStatsCallback, accuracy),
+    partial(ParamScheduler, "lr", sched_lr),
+    partial(ParamScheduler, "mom", sched_mom),
+    partial(BatchTransformXCallback, norm_imagenette),
     ProgressCallback,
     Recorder,
-#     MixUp,
-       partial(CudaCallback, device)]
+    #     MixUp,
+    partial(CudaCallback, device),
+]
 
-loss_func=LabelSmoothingCrossEntropy()
-arch = partial(xresnet18, c_out = n_classes)
+loss_func = LabelSmoothingCrossEntropy()
+arch = partial(xresnet18, c_out=n_classes)
 # arch = get_vision_model("resnet34", n_classes=n_classes, pretrained=True)
 
 # opt_func = partial(sgd_mom_opt, wd=0.01)
@@ -156,7 +160,7 @@ opt_func = adam_opt(mom=0.9, mom_sqr=0.99, eps=1e-6, wd=1e-2)
 clear_memory()
 
 # learn = get_learner(nfs, data, lr, conv_layer, cb_funcs=cbfs)
-learn = Learner(arch(),  data, loss_func, lr=lr, cb_funcs=cbfs, opt_func=opt_func)
+learn = Learner(arch(), data, loss_func, lr=lr, cb_funcs=cbfs, opt_func=opt_func)
 
 # +
 # model_summary(learn, data)
@@ -173,5 +177,3 @@ classification_report(learn, n_classes, device)
 learn.recorder.plot_lr()
 
 learn.recorder.plot_loss()
-
-

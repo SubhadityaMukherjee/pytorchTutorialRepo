@@ -1,3 +1,4 @@
+#!/bin/bash
 black "." && isort .
 # Echo the template
 cat readmetemplate.md > README.md

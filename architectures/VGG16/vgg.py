@@ -1,5 +1,5 @@
 import torch.nn as nn
-from einops.layers.torch import Reduce
+import lightningaddon as la
 
 
 def conv_bn_relu(in_shape, ks, stride=1, padding=1, diff_out=None):
@@ -17,7 +17,7 @@ def pooler(ks=2, stride=2):
 
 def fc(num_classes):
     return nn.Sequential(
-        Reduce("b c h w -> b c", "mean"),  # combine avg pool + view
+        la.avgpoolflatten(),
         nn.Linear(512, 4096),
         nn.ReLU(),
         nn.Dropout(p=0.5),
