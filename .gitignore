@@ -16,3 +16,5 @@ __pycache__/*
 *.csv
 runs/
 runs/*
+.ipynb_checkpoints
+.ipynb_checkpoints/*
